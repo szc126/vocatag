@@ -24,12 +24,12 @@ service_urls = {
 }
 
 service_url_functions = {
-	'SoundCloud': lambda x:re.search('([a-z0-9_-]+/[a-z0-9_-]+)', x).group(1) # leave the latter part (not the numeric id)
+	'SoundCloud': lambda x:re.search('([a-z0-9_-]+/[a-z0-9_-]+)', x).group(1), # leave the latter part (not the numeric id)
 }
 
 db_urls = {
 	'VocaDB': 'https://vocadb.net/api/songs/byPv?pvService={}&pvId={}&fields=Artists&lang={}',
-	'UtaiteDB': 'https://utaitedb.net/api/songs/byPv?pvService={}&pvId={}&fields=Artists&lang={}'
+	'UtaiteDB': 'https://utaitedb.net/api/songs/byPv?pvService={}&pvId={}&fields=Artists&lang={}',
 }
 
 db_urls_addpv = {
