@@ -28,8 +28,8 @@ service_url_functions = {
 }
 
 db_urls = {
-	'vocadb': 'http://vocadb.net/api/songs/byPv?pvService={}&pvId={}&fields=Artists&lang={}',
-	'utaitedb': 'http://utaitedb.net/api/songs/byPv?pvService={}&pvId={}&fields=Artists&lang={}'
+	'VocaDB': 'http://vocadb.net/api/songs/byPv?pvService={}&pvId={}&fields=Artists&lang={}',
+	'UtaiteDB': 'http://utaitedb.net/api/songs/byPv?pvService={}&pvId={}&fields=Artists&lang={}'
 }
 
 user_agent = 'vocadb_tag.py (https://vocadb.net/Profile/u126)'
