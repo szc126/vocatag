@@ -32,13 +32,20 @@ db_urls = {
 	'utaitedb': 'http://utaitedb.net/api/songs/byPv?pvService={}&pvId={}&fields=Artists&lang={}'
 }
 
+user_agent = 'vocadb_tag.py (https://vocadb.net/Profile/u126)'
+
 colorama.init(autoreset=True)
 
 def fetch_data(service, id):
 	"""Fetch PV data from the VocaDB/UtaiteDB API"""
 
 	for db in db_urls:
-		response = requests.get(db_urls[db].format(service, id, cfg['LANGUAGE']))
+		response = requests.get(
+			db_urls[db].format(service, id, cfg['LANGUAGE']),
+			headers = {
+				'user-agent': user_agent,
+			},
+		)
 
 		if not response.content == b'null':
 			return db, response
