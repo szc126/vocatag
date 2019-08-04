@@ -7,15 +7,16 @@ from lxml import etree
 import os
 import re
 import requests
+import runpy
 
-LOG_FILENAME = 'nnd_verify OUT.log'
+cfg = runpy.run_path('config.nnd_verify.py')
 
 colorama.init(autoreset=True)
 
 logging.basicConfig(
 	format = '%(message)s',
 	handlers =  [
-		logging.FileHandler(LOG_FILENAME),
+		logging.FileHandler(cfg['LOG_FILENAME']),
 	],
 )
 

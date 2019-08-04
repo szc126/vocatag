@@ -7,22 +7,9 @@ import json
 import os
 import re
 import requests
+import runpy
 
-LANGUAGE = 'Default' # Default, Japanese, Romaji, English
-
-OUTPUT_FILE = 'vocadb_tag OUT.log'
-OUTPUT_DELIMITER = '\t'
-FORMATSTRING_OUTPUT_FILE = 'vocadb_tag OUT FS.log'
-
-METADATA_FORMAT = {
-	'TITLE': '$title',
-	'ARTIST': '$vocalists',
-	'COMPOSER': '$producers',
-	'DATE': '$year',
-	'URL': '$url',
-	'COMMENT': '$song_type song ; $x_db_id@$x_db',
-}
-METADATA_DELIMITER = '; ' # as in "初音ミク; GUMI"
+cfg = runpy.run_path('config.vocadb_tag.py')
 
 service_regexes = {
 	'NicoNicoDouga': '([sn]m\d+)',
@@ -51,7 +38,7 @@ def fetch_data(service, id):
 	"""Fetch PV data from the VocaDB/UtaiteDB API"""
 
 	for db in db_urls:
-		response = requests.get(db_urls[db].format(service, id, LANGUAGE))
+		response = requests.get(db_urls[db].format(service, id, cfg['LANGUAGE']))
 
 		if not response.content == b'null':
 			return db, response
@@ -179,28 +166,28 @@ def tag_file(path):
 	def metadata_returner(x):
 		metadata_value = metadata[x.group(1)]
 		if type(metadata_value) is list:
-			metadata_value = METADATA_DELIMITER.join(metadata_value)
+			metadata_value = cfg['METADATA_DELIMITER'].join(metadata_value)
 		elif type(metadata_value) is int:
 			metadata_value = str(metadata_value)
 		return metadata_value
 
-	with open(OUTPUT_FILE, mode='a', encoding='utf-8') as file:
+	with open(cfg['OUTPUT_FILE'], mode='a', encoding='utf-8') as file:
 		metadata_values = [path]
 
-		for field in METADATA_FORMAT:
-			metadata_value = re.sub('\$([a-z_]+)', metadata_returner, METADATA_FORMAT[field]) # pattern, repl, string
+		for field in cfg['METADATA_FORMAT']:
+			metadata_value = re.sub('\$([a-z_]+)', metadata_returner, cfg['METADATA_FORMAT'][field]) # pattern, repl, string
 			metadata_values.append(metadata_value)
 
-		file.write(OUTPUT_DELIMITER.join(metadata_values) + '\n')
+		file.write(cfg['OUTPUT_DELIMITER'].join(metadata_values) + '\n')
 
 def write_mp3tag_format_string():
-	with open(FORMATSTRING_OUTPUT_FILE, mode='w', encoding='utf-8') as file:
+	with open(cfg['FORMATSTRING_OUTPUT_FILE'], mode='w', encoding='utf-8') as file:
 		format_string = ['%_filename_ext%']
 
-		for field in METADATA_FORMAT:
+		for field in cfg['METADATA_FORMAT']:
 			format_string.append('%{}%'.format(field.lower()))
 
-		file.write(OUTPUT_DELIMITER.join(format_string) + '\n')
+		file.write(cfg['OUTPUT_DELIMITER'].join(format_string) + '\n')
 
 def main(args):
 	check_connectivity()
@@ -208,7 +195,7 @@ def main(args):
 	write_mp3tag_format_string()
 
 	# tentative
-	with open(OUTPUT_FILE, mode='w', encoding='utf-8') as file:
+	with open(cfg['OUTPUT_FILE'], mode='w', encoding='utf-8') as file:
 		file.write('\ufeff') # bom, for mp3tag
 
 	for dir, subdirs, files in os.walk(args.FOOBAR):
