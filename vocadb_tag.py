@@ -32,6 +32,11 @@ db_urls = {
 	'UtaiteDB': 'https://utaitedb.net/api/songs/byPv?pvService={}&pvId={}&fields=Artists&lang={}'
 }
 
+db_urls_addpv = {
+	'VocaDB': 'https://vocadb.net/Song/Create?PVUrl={}',
+	'UtaiteDB': 'https://utaitedb.net/Song/Create?PVUrl={}',
+}
+
 user_agent = 'vocadb_tag.py (https://vocadb.net/Profile/u126)'
 
 file_extensions = ('.mp3', '.m4a', '.ogg')
@@ -54,6 +59,12 @@ def fetch_data(service, id):
 			break
 
 	print(colorama.Back.RED + f'The video \'{id}@{service}\' is not registered on VocaDB or UtaiteDB!')
+	print('Add it?')
+	for db in db_urls_addpv:
+		print(db_urls_addpv[db].format(
+			service_urls[service].format(id)
+		))
+
 	return None, None
 
 def check_connectivity():
