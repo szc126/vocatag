@@ -34,6 +34,8 @@ db_urls = {
 
 user_agent = 'vocadb_tag.py (https://vocadb.net/Profile/u126)'
 
+file_extensions = ('.mp3', '.m4a', '.ogg')
+
 colorama.init(autoreset=True)
 
 def fetch_data(service, id):
@@ -207,7 +209,7 @@ def main(args):
 
 	for dir, subdirs, files in os.walk(args.FOOBAR):
 		for file in files:
-			if file.endswith(('.mp3', '.m4a', '.ogg')):
+			if file.endswith(file_extensions):
 				tag_file(file)
 
 if __name__ == "__main__":
