@@ -18,8 +18,8 @@ service_regexes = {
 }
 
 service_urls = {
-	'NicoNicoDouga': 'http://www.nicovideo.jp/watch/{}',
-	'SoundCloud': 'http://soundcloud.com/{}',
+	'NicoNicoDouga': 'https://www.nicovideo.jp/watch/{}',
+	'SoundCloud': 'https://soundcloud.com/{}',
 	'Youtube': 'https://www.youtube.com/watch?v={}',
 }
 
@@ -28,8 +28,8 @@ service_url_functions = {
 }
 
 db_urls = {
-	'VocaDB': 'http://vocadb.net/api/songs/byPv?pvService={}&pvId={}&fields=Artists&lang={}',
-	'UtaiteDB': 'http://utaitedb.net/api/songs/byPv?pvService={}&pvId={}&fields=Artists&lang={}'
+	'VocaDB': 'https://vocadb.net/api/songs/byPv?pvService={}&pvId={}&fields=Artists&lang={}',
+	'UtaiteDB': 'https://utaitedb.net/api/songs/byPv?pvService={}&pvId={}&fields=Artists&lang={}'
 }
 
 user_agent = 'vocadb_tag.py (https://vocadb.net/Profile/u126)'
