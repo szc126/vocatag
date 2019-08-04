@@ -68,7 +68,7 @@ def fetch_data(service, id):
 	return None, None
 
 def check_connectivity():
-	"""Check to see if the NND API can be reached"""
+	"""Check to see if the VocaDB API can be reached"""
 
 	try:
 		fetch_data('NicoNicoDouga', 'sm26661454')
