@@ -173,7 +173,7 @@ def determine_service_and_pv_id(path):
 
 		if matches:
 			pv_id = matches.group(1)
-			print(f'o {service}: {pv_id}')
+			print(f'o {service} | {pv_id}')
 			return service, pv_id
 			break
 		else:
@@ -195,17 +195,19 @@ def determine_service_and_pv_id(path):
 	ffprobe_output = str(ffprobe_output, 'UTF-8')
 	#ffprobe_output = json.loads(ffprobe_output)
 	# XXX: hot garbage
+	#print(ffprobe_output)
 	for service in service_regexes:
-		matches = re.search('http.+' + service_regexes[service], ffprobe_output)
+		matches = re.search('http.+' + service_regexes[service] + '.+', ffprobe_output)
 
 		if matches:
 			pv_id = matches.group(1)
-			print(f'o {service}: {pv_id}')
+			print(f'o {service} | {pv_id} | {matches.group(0)}')
 			return service, pv_id
 			break
 		else:
 			print(f'x {service}')
 
+	print(colorama.Fore.RED + 'Could not find a PV ID.')
 	return None, None # path did not match any service urls
 
 def write_tags(path):
@@ -217,8 +219,6 @@ def write_tags(path):
 		return None # path did not match any service urls
 
 	metadata = generate_metadata(service, pv_id)
-
-	print()
 
 	if metadata is None:
 		return None # vocadb has no data
@@ -277,6 +277,7 @@ def main(args):
 
 	for path in collect_paths(args.paths):
 		write_tags(path)
+		print()
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description='For PATH(s), retrieve song metadata from VocaDB or UtaiteDB.')
