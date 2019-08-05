@@ -76,7 +76,7 @@ def check_connectivity():
 		print(colorama.Fore.RED + 'Server could not be reached!')
 		quit()
 
-def generate_metadata(service, pv_id):
+def generate_metadata(service, pv_id, path):
 	"""Parse and rearrange the data from the VocaDB API"""
 
 	db, api_data = fetch_data(service, pv_id)
@@ -109,6 +109,8 @@ def generate_metadata(service, pv_id):
 	metadata['x_db'] = db
 
 	metadata['x_db_id'] = api_data['id']
+
+	metadata['x_path'] = path
 
 	metadata['title'] = api_data['name']
 
@@ -218,7 +220,7 @@ def write_tags(path):
 	if service is None:
 		return None # path did not match any service urls
 
-	metadata = generate_metadata(service, pv_id)
+	metadata = generate_metadata(service, pv_id, path)
 
 	if metadata is None:
 		return None # vocadb has no data
@@ -232,7 +234,7 @@ def write_tags(path):
 		return metadata_value
 
 	with open(cfg['tags_output_file'], mode='a', encoding='utf-8') as file:
-		metadata_values = [path]
+		metadata_values = []
 
 		for field in cfg['metadata_tags']:
 			metadata_value = re.sub('\$([a-z_]+)', metadata_returner, cfg['metadata_tags'][field]) # pattern, repl, string
@@ -242,7 +244,7 @@ def write_tags(path):
 
 def write_mp3tag_format_string():
 	with open(cfg['formatstring_output_file'], mode='w', encoding='utf-8') as file:
-		format_string = ['%_filename_ext%']
+		format_string = []
 
 		for field in cfg['metadata_tags']:
 			format_string.append('%{}%'.format(field.lower()))

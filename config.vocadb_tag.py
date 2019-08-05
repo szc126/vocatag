@@ -13,5 +13,6 @@ metadata_tags = {
 	'DATE': '$year',
 	'URL': '$url',
 	'COMMENT': '$song_type song ; $x_db_id@$x_db',
+	'_filename_ext': '$x_path', # mp3tag
 }
 metadata_multi_value_delimiter = ';' # as in "初音ミク; GUMI"
