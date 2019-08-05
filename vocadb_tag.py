@@ -11,9 +11,9 @@ import runpy
 cfg = runpy.run_path('config.vocadb_tag.py')
 
 service_regexes = {
-	'NicoNicoDouga': '([sn]m\d+)',
-	'SoundCloud': '([0-9]+ [a-z0-9-]+/[a-z0-9-]+)', # not sure what program would output files like this
-	'Youtube': '([A-Za-z0-9_-]{11})',
+	'NicoNicoDouga': '(?:nicovideo\.jp/watch/)?([sn]m\d+)',
+	'SoundCloud': '(?:soundcloud\.com/)([a-z0-9_-]+/[a-z0-9_-]+)',
+	'Youtube': '(?:youtube\.com/watch\?v=|youtu\.be/)?([A-Za-z0-9_-]{11})',
 }
 
 service_urls = {
@@ -22,7 +22,26 @@ service_urls = {
 	'Youtube': 'https://www.youtube.com/watch?v={}',
 }
 
-service_url_functions = {
+def service_id_function_soundcloud(pv_id):
+	import youtube_dl
+
+	try:
+		ytdl = youtube_dl.YoutubeDL()
+		ytdl_info = ytdl.extract_info(
+			service_urls['SoundCloud'].format(pv_id),
+			download = False,
+		)
+	except:
+		return ""
+	else:
+		return ytdl_info.get('id') + ' ' + pv_id
+
+to_vocadb_pv_id = {
+	'SoundCloud': service_id_function_soundcloud
+}
+
+# conver VocaDB PV ID to pv_id
+from_vocadb_pv_id = {
 	'SoundCloud': lambda x:re.search('([a-z0-9_-]+/[a-z0-9_-]+)', x).group(1), # leave the latter part (not the numeric id)
 }
 
@@ -45,6 +64,11 @@ colorama.init(autoreset=True)
 def fetch_data(service, pv_id):
 	"""Fetch PV data from the VocaDB/UtaiteDB API"""
 
+	pv_id_original = pv_id
+
+	if service in to_vocadb_pv_id:
+		pv_id = to_vocadb_pv_id[service](pv_id)
+
 	for db in api_urls_song_by_pv:
 		response = requests.get(
 			api_urls_song_by_pv[db].format(service, pv_id, cfg['language']),
@@ -62,7 +86,7 @@ def fetch_data(service, pv_id):
 	print('Add it?')
 	for db in api_urls_add_pv:
 		print(api_urls_add_pv[db].format(
-			service_urls[service].format(pv_id)
+			service_urls[service].format(pv_id_original)
 		))
 
 	return None, None
@@ -121,8 +145,8 @@ def generate_metadata(service, pv_id, path):
 
 		metadata['year'] = metadata['publish_date'][0:4] # it just werks
 
-	if service in service_url_functions:
-		pv_id = service_url_functions[service](pv_id)
+	if service in from_vocadb_pv_id:
+		pv_id = from_vocadb_pv_id[service](pv_id)
 
 	metadata['url'] = service_urls[service].format(pv_id)
 
