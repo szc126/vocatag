@@ -226,7 +226,7 @@ def determine_service_and_pv_id(path):
 		# XXX: hot garbage
 		#print(ffprobe_output)
 		for service in service_regexes:
-			matches = re.search('http.+(?:nicovideo|youtube).+' + service_regexes[service] + '.*', ffprobe_output)
+			matches = re.search('http.+' + service_regexes[service] + '.*', ffprobe_output)
 
 			if matches:
 				pv_id = matches.group(1)
