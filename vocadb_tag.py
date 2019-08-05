@@ -158,7 +158,7 @@ def get_ffprobe_path():
 	if args.ffprobe:
 		return args.ffprobe
 	else:
-		# StackOverflow 9877462
+		# https://stackoverflow.com/q/9877462
 		from distutils.spawn import find_executable
 		return find_executable('ffprobe')
 
