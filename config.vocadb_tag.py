@@ -14,4 +14,4 @@ METADATA_FORMAT = {
 	'URL': '$url',
 	'COMMENT': '$song_type song ; $x_db_id@$x_db',
 }
-METADATA_DELIMITER = '; ' # as in "初音ミク; GUMI"
+METADATA_MULTI_VALUE_DELIMITER = '; ' # as in "初音ミク; GUMI"

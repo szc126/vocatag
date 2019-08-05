@@ -225,7 +225,7 @@ def write_tags(path):
 	def metadata_returner(x):
 		metadata_value = metadata[x.group(1)]
 		if type(metadata_value) is list:
-			metadata_value = cfg['METADATA_DELIMITER'].join(metadata_value)
+			metadata_value = cfg['METADATA_MULTI_VALUE_DELIMITER'].join(metadata_value)
 		elif type(metadata_value) is int:
 			metadata_value = str(metadata_value)
 		return metadata_value
