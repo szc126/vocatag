@@ -266,7 +266,7 @@ def collect_paths(paths):
 	return collected_paths
 
 def main(args):
-	check_connectivity()
+	#check_connectivity()
 
 	write_mp3tag_format_string()
 
