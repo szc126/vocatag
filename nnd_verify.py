@@ -23,7 +23,7 @@ logging.basicConfig(
 def fetch_data(id):
 	"""Fetch video data from the NND API"""
 
-	return requests.get(f'http://ext.nicovideo.jp/api/getthumbinfo/{id}')
+	return requests.get(f'https://ext.nicovideo.jp/api/getthumbinfo/{id}')
 
 def check_connectivity():
 	"""Check to see if the NND API can be reached"""
@@ -84,10 +84,10 @@ def verify_filesize(path):
 			print(colorama.Back.GREEN + f'  OK ({size_real} = {size_hq}, HQ)')
 		elif size_real == size_lq:
 			print(colorama.Back.MAGENTA + f'  X ({size_real} = {size_lq} != {size_hq}, LQ)')
-			logging.warning(f'http://www.nicovideo.jp/watch/{id}') # Write URL to log
+			logging.warning(f'https://www.nicovideo.jp/watch/{id}') # Write URL to log
 		else:
 			print(colorama.Back.RED + f'  X ({size_real} != {size_hq} != {size_lq}, neither)')
-			logging.warning(f'http://www.nicovideo.jp/watch/{id}')
+			logging.warning(f'https://www.nicovideo.jp/watch/{id}')
 
 def main():
 	check_connectivity()
