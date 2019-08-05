@@ -42,12 +42,12 @@ file_extensions = ('.mp3', '.m4a', '.ogg')
 
 colorama.init(autoreset=True)
 
-def fetch_data(service, id):
+def fetch_data(service, pv_id):
 	"""Fetch PV data from the VocaDB/UtaiteDB API"""
 
 	for db in api_urls_song_by_pv:
 		response = requests.get(
-			api_urls_song_by_pv[db].format(service, id, cfg['LANGUAGE']),
+			api_urls_song_by_pv[db].format(service, pv_id, cfg['LANGUAGE']),
 			headers = {
 				'user-agent': user_agent,
 			},
@@ -62,7 +62,7 @@ def fetch_data(service, id):
 	print('Add it?')
 	for db in api_urls_add_pv:
 		print(api_urls_add_pv[db].format(
-			service_urls[service].format(id)
+			service_urls[service].format(pv_id)
 		))
 
 	return None, None
@@ -76,10 +76,10 @@ def check_connectivity():
 		print(colorama.Fore.RED + 'Server could not be reached!')
 		quit()
 
-def generate_metadata(service, id):
+def generate_metadata(service, pv_id):
 	"""Parse and rearrange the data from the VocaDB API"""
 
-	db, api_data = fetch_data(service, id)
+	db, api_data = fetch_data(service, pv_id)
 
 	if api_data is None:
 		return None
@@ -120,9 +120,9 @@ def generate_metadata(service, id):
 		metadata['year'] = metadata['publish_date'][0:4] # it just werks
 
 	if service in service_url_functions:
-		id = service_url_functions[service](id)
+		pv_id = service_url_functions[service](pv_id)
 
-	metadata['url'] = service_urls[service].format(id)
+	metadata['url'] = service_urls[service].format(pv_id)
 
 	for artist in api_data['artists']:
 		#print(artist)
@@ -162,7 +162,7 @@ def get_ffprobe_path():
 		from distutils.spawn import find_executable
 		return find_executable('ffprobe')
 
-def determine_service_and_id(path):
+def determine_service_and_pv_id(path):
 	"""Determine the service and PV ID"""
 
 	print(colorama.Fore.BLUE + path + ':')
@@ -172,9 +172,9 @@ def determine_service_and_id(path):
 		matches = re.search(service_regexes[service], path)
 
 		if matches:
-			id = matches.group(1)
-			print(f'o {service}: {id}')
-			return service, id
+			pv_id = matches.group(1)
+			print(f'o {service}: {pv_id}')
+			return service, pv_id
 			break
 		else:
 			print(f'x {service}')
@@ -198,9 +198,9 @@ def determine_service_and_id(path):
 		matches = re.search('http.+' + service_regexes[service], ffprobe_output)
 
 		if matches:
-			id = matches.group(1)
-			print(f'o {service}: {id}')
-			return service, id
+			pv_id = matches.group(1)
+			print(f'o {service}: {pv_id}')
+			return service, pv_id
 			break
 		else:
 			print(f'x {service}')
@@ -210,12 +210,12 @@ def determine_service_and_id(path):
 def write_tags(path):
 	"""Given the file path, write tags"""
 
-	service, id = determine_service_and_id(path)
+	service, pv_id = determine_service_and_pv_id(path)
 
 	if service is None:
 		return None # path did not match any service urls
 
-	metadata = generate_metadata(service, id)
+	metadata = generate_metadata(service, pv_id)
 
 	print()
 
