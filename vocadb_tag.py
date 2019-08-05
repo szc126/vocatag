@@ -209,6 +209,23 @@ def write_mp3tag_format_string():
 
 		file.write(cfg['OUTPUT_DELIMITER'].join(format_string) + '\n')
 
+def collect_paths(paths):
+	"""Create list of files from a list of files and folders, traversing through given folders"""
+
+	collected_paths = []
+
+	for path in paths:
+		if os.path.isfile(path):
+			collected_paths.append(path)
+		elif os.path.isdir(path):
+			for dir, subdirs, files in os.walk(path):
+				for file in files:
+					if file.endswith(file_extensions):
+						path = os.path.join(dir, file)
+						collected_paths.append(path)
+
+	return collected_paths
+
 def main(args):
 	check_connectivity()
 
@@ -218,14 +235,20 @@ def main(args):
 	with open(cfg['OUTPUT_FILE'], mode='w', encoding='utf-8') as file:
 		file.write('\ufeff') # bom, for mp3tag
 
-	for dir, subdirs, files in os.walk(args.FOOBAR):
-		for file in files:
-			if file.endswith(file_extensions):
-				tag_file(file)
+	paths = collect_paths(args.paths)
+
+	for path in paths:
+		tag_file(path)
 
 if __name__ == "__main__":
-	parser = argparse.ArgumentParser(description='LOREM IPSUM DOLOR SIT AMET')
-	parser.add_argument('FOOBAR', help='LOREM IPSUM DOLOR SIT AMET', metavar='LOREM IPSUM DOLOR SIT AMET')
+	parser = argparse.ArgumentParser(description='For PATH(s), retrieve song metadata from VocaDB or UtaiteDB.')
+	parser.add_argument(
+		'paths',
+		metavar='[PATH]...',
+		help='Files or folders. Folders will be scanned for certain file ' +
+			'types: ' + ' '.join(file_extensions),
+		nargs='+'
+	)
 	args = parser.parse_args()
 
 	main(args)
