@@ -134,6 +134,7 @@ def generate_metadata(service, pv_id, path):
 
 	metadata['x_db_id'] = api_data['id']
 
+	metadata['x_filename_ext'] = os.path.basename(path)
 	metadata['x_path'] = path
 
 	metadata['title'] = api_data['name']
