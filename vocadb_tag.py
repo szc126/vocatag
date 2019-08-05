@@ -188,6 +188,7 @@ def determine_service_and_pv_id(path):
 			'-v', 'quiet',
 			#'-print_format', 'json',
 			'-print_format', 'default',
+			'-show_streams', # .ogg, https://trac.ffmpeg.org/ticket/4224
 			path,
 		],
 	)
