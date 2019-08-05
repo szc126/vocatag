@@ -184,8 +184,9 @@ def generate_metadata(service, pv_id, path):
 def get_ffprobe_path():
 	if cfg['ffprobe'] == True:
 		# https://stackoverflow.com/q/9877462
-		from distutils.spawn import find_executable
-		return find_executable('ffprobe')
+		#from distutils.spawn import find_executable
+		#return find_executable('ffprobe')
+		return 'ffprobe'
 	else:
 		return cfg['ffprobe']
 
