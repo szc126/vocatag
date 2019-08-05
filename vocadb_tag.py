@@ -27,12 +27,12 @@ service_url_functions = {
 	'SoundCloud': lambda x:re.search('([a-z0-9_-]+/[a-z0-9_-]+)', x).group(1), # leave the latter part (not the numeric id)
 }
 
-db_urls = {
+api_urls_song_by_pv = {
 	'VocaDB': 'https://vocadb.net/api/songs/byPv?pvService={}&pvId={}&fields=Artists&lang={}',
 	'UtaiteDB': 'https://utaitedb.net/api/songs/byPv?pvService={}&pvId={}&fields=Artists&lang={}',
 }
 
-db_urls_addpv = {
+api_urls_add_pv = {
 	'VocaDB': 'https://vocadb.net/Song/Create?PVUrl={}',
 	'UtaiteDB': 'https://utaitedb.net/Song/Create?PVUrl={}',
 }
@@ -46,22 +46,23 @@ colorama.init(autoreset=True)
 def fetch_data(service, id):
 	"""Fetch PV data from the VocaDB/UtaiteDB API"""
 
-	for db in db_urls:
+	for db in api_urls_song_by_pv:
 		response = requests.get(
-			db_urls[db].format(service, id, cfg['LANGUAGE']),
+			api_urls_song_by_pv[db].format(service, id, cfg['LANGUAGE']),
 			headers = {
 				'user-agent': user_agent,
 			},
 		)
 
 		if not response.content == b'null':
+			print(colorama.Fore.GREEN + 'Entry found!')
 			return db, response
 			break
 
-	print(colorama.Back.RED + f'The video \'{id}@{service}\' is not registered on VocaDB or UtaiteDB!')
+	print(colorama.Fore.RED + 'Entry not found!')
 	print('Add it?')
-	for db in db_urls_addpv:
-		print(db_urls_addpv[db].format(
+	for db in api_urls_add_pv:
+		print(api_urls_add_pv[db].format(
 			service_urls[service].format(id)
 		))
 
@@ -73,7 +74,7 @@ def check_connectivity():
 	try:
 		fetch_data('NicoNicoDouga', 'sm26661454')
 	except:
-		print(colorama.Back.RED + 'Server could not be reached!')
+		print(colorama.Fore.RED + 'Server could not be reached!')
 		quit()
 
 def generate_metadata(service, id):
@@ -154,31 +155,70 @@ def generate_metadata(service, id):
 
 	return metadata
 
-def determine_service_and_id(path):
-	"""Test path against regexes to determine the service and PV ID"""
+def get_ffprobe_path():
+	if args.ffprobe:
+		return args.ffprobe
+	else:
+		# StackOverflow 9877462
+		from distutils.spawn import find_executable
+		return find_executable('ffprobe')
 
+def determine_service_and_id(path):
+	"""Determine the service and PV ID"""
+
+	print(colorama.Fore.BLUE + path + ':')
+
+	print('Examining path:')
 	for service in service_regexes:
 		matches = re.search(service_regexes[service], path)
 
 		if matches:
-			return service, matches.group(1)
+			id = matches.group(1)
+			print(f'o {service}: {id}')
+			return service, id
 			break
 		else:
-			print(f'{path} is not {service}')
+			print(f'x {service}')
+
+	import subprocess
+	print('Examining tags:')
+	ffprobe_output = subprocess.check_output(
+		[
+			get_ffprobe_path(),
+			'-show_format',
+			'-v', 'quiet',
+			#'-print_format', 'json',
+			'-print_format', 'default',
+			path,
+		],
+	)
+	ffprobe_output = str(ffprobe_output, 'UTF-8')
+	#ffprobe_output = json.loads(ffprobe_output)
+	# XXX: hot garbage
+	for service in service_regexes:
+		matches = re.search('http.+' + service_regexes[service], ffprobe_output)
+
+		if matches:
+			id = matches.group(1)
+			print(f'o {service}: {id}')
+			return service, id
+			break
+		else:
+			print(f'x {service}')
 
 	return None, None # path did not match any service urls
 
-def tag_file(path):
-	"""Given the file path, write lines for mp3tag"""
+def write_tags(path):
+	"""Given the file path, write tags"""
 
 	service, id = determine_service_and_id(path)
 
 	if service is None:
 		return None # path did not match any service urls
 
-	print(id)
-
 	metadata = generate_metadata(service, id)
+
+	print()
 
 	if metadata is None:
 		return None # vocadb has no data
@@ -235,10 +275,8 @@ def main(args):
 	with open(cfg['OUTPUT_FILE'], mode='w', encoding='utf-8') as file:
 		file.write('\ufeff') # bom, for mp3tag
 
-	paths = collect_paths(args.paths)
-
-	for path in paths:
-		tag_file(path)
+	for path in collect_paths(args.paths):
+		write_tags(path)
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description='For PATH(s), retrieve song metadata from VocaDB or UtaiteDB.')
@@ -248,6 +286,11 @@ if __name__ == "__main__":
 		help='Files or folders. Folders will be scanned for certain file ' +
 			'types: ' + ' '.join(file_extensions),
 		nargs='+'
+	)
+	parser.add_argument(
+		'--ffprobe',
+		metavar='PATH',
+		help='Location of a ffprobe binary.',
 	)
 	args = parser.parse_args()
 
