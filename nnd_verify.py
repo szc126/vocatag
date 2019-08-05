@@ -92,14 +92,19 @@ def verify_filesize(path):
 def main():
 	check_connectivity()
 
-	paths = collect_paths(args.path)
+	paths = collect_paths(args.paths)
 
 	for path in paths:
 		verify_filesize(path)
 
 if __name__ == "__main__":
-	parser = argparse.ArgumentParser(description='Check the file size of a Niconico Douga download')
-	parser.add_argument('path', nargs='+', help='file path or file folder', metavar='LOREM IPSUM DOLOR SIT AMET')
+	parser = argparse.ArgumentParser(description='For PATH(s), check the file size of Niconico Douga downloads.')
+	parser.add_argument(
+		'paths',
+		metavar='[PATH]...',
+		help='Files or folders.',
+		nargs='+',
+	)
 	args = parser.parse_args()
 
 	main()
