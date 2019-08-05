@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
-LANGUAGE = 'Default' # Default, Japanese, Romaji, English
+language = 'Default' # Default, Japanese, Romaji, English
 
-OUTPUT_FILE = 'vocadb_tag OUT.log'
-OUTPUT_DELIMITER = '\t'
-FORMATSTRING_OUTPUT_FILE = 'vocadb_tag OUT FS.log'
+tags_output_file = 'vocadb_tag OUT.log'
+tags_output_file_tag_delimiter = '\t'
+formatstring_output_file = 'vocadb_tag OUT FS.log'
 
-METADATA_FORMAT = {
+metadata_tags = {
 	'TITLE': '$title',
 	'ARTIST': '$vocalists',
 	'COMPOSER': '$producers',
@@ -14,4 +14,4 @@ METADATA_FORMAT = {
 	'URL': '$url',
 	'COMMENT': '$song_type song ; $x_db_id@$x_db',
 }
-METADATA_MULTI_VALUE_DELIMITER = '; ' # as in "初音ミク; GUMI"
+metadata_multi_value_delimiter = '; ' # as in "初音ミク; GUMI"

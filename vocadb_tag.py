@@ -47,7 +47,7 @@ def fetch_data(service, pv_id):
 
 	for db in api_urls_song_by_pv:
 		response = requests.get(
-			api_urls_song_by_pv[db].format(service, pv_id, cfg['LANGUAGE']),
+			api_urls_song_by_pv[db].format(service, pv_id, cfg['language']),
 			headers = {
 				'user-agent': user_agent,
 			},
@@ -225,28 +225,28 @@ def write_tags(path):
 	def metadata_returner(x):
 		metadata_value = metadata[x.group(1)]
 		if type(metadata_value) is list:
-			metadata_value = cfg['METADATA_MULTI_VALUE_DELIMITER'].join(metadata_value)
+			metadata_value = cfg['metadata_multi_value_delimiter'].join(metadata_value)
 		elif type(metadata_value) is int:
 			metadata_value = str(metadata_value)
 		return metadata_value
 
-	with open(cfg['OUTPUT_FILE'], mode='a', encoding='utf-8') as file:
+	with open(cfg['tags_output_file'], mode='a', encoding='utf-8') as file:
 		metadata_values = [path]
 
-		for field in cfg['METADATA_FORMAT']:
-			metadata_value = re.sub('\$([a-z_]+)', metadata_returner, cfg['METADATA_FORMAT'][field]) # pattern, repl, string
+		for field in cfg['metadata_tags']:
+			metadata_value = re.sub('\$([a-z_]+)', metadata_returner, cfg['metadata_tags'][field]) # pattern, repl, string
 			metadata_values.append(metadata_value)
 
-		file.write(cfg['OUTPUT_DELIMITER'].join(metadata_values) + '\n')
+		file.write(cfg['tags_output_file_tag_delimiter'].join(metadata_values) + '\n')
 
 def write_mp3tag_format_string():
-	with open(cfg['FORMATSTRING_OUTPUT_FILE'], mode='w', encoding='utf-8') as file:
+	with open(cfg['formatstring_output_file'], mode='w', encoding='utf-8') as file:
 		format_string = ['%_filename_ext%']
 
-		for field in cfg['METADATA_FORMAT']:
+		for field in cfg['metadata_tags']:
 			format_string.append('%{}%'.format(field.lower()))
 
-		file.write(cfg['OUTPUT_DELIMITER'].join(format_string) + '\n')
+		file.write(cfg['tags_output_file_tag_delimiter'].join(format_string) + '\n')
 
 def collect_paths(paths):
 	"""Create list of files from a list of files and folders, traversing through given folders"""
@@ -271,7 +271,7 @@ def main(args):
 	write_mp3tag_format_string()
 
 	# tentative
-	with open(cfg['OUTPUT_FILE'], mode='w', encoding='utf-8') as file:
+	with open(cfg['tags_output_file'], mode='w', encoding='utf-8') as file:
 		file.write('\ufeff') # bom, for mp3tag
 
 	for path in collect_paths(args.paths):
