@@ -125,8 +125,8 @@ def generate_metadata(service, id):
 	metadata['url'] = service_urls[service].format(id)
 
 	for artist in api_data['artists']:
-		# print(artist)
-		# print()
+		#print(artist)
+		#print()
 
 		if not 'artist' in artist: # custom artist
 			pass
