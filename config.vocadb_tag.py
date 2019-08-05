@@ -16,3 +16,5 @@ metadata_tags = {
 	'_filename_ext': '$x_path', # mp3tag
 }
 metadata_multi_value_delimiter = ';' # as in "初音ミク; GUMI"
+
+ffprobe = True # True, False, <path>

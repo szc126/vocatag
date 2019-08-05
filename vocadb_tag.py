@@ -157,12 +157,12 @@ def generate_metadata(service, pv_id, path):
 	return metadata
 
 def get_ffprobe_path():
-	if args.ffprobe:
-		return args.ffprobe
-	else:
+	if cfg['ffprobe'] == True:
 		# https://stackoverflow.com/q/9877462
 		from distutils.spawn import find_executable
 		return find_executable('ffprobe')
+	else:
+		return cfg['ffprobe']
 
 def determine_service_and_pv_id(path):
 	"""Determine the service and PV ID"""
@@ -181,33 +181,34 @@ def determine_service_and_pv_id(path):
 		else:
 			print(f'x {service}')
 
-	import subprocess
-	print('Examining tags:')
-	ffprobe_output = subprocess.check_output(
-		[
-			get_ffprobe_path(),
-			'-show_format',
-			'-v', 'quiet',
-			#'-print_format', 'json',
-			'-print_format', 'default',
-			'-show_streams', # .ogg, https://trac.ffmpeg.org/ticket/4224
-			path,
-		],
-	)
-	ffprobe_output = str(ffprobe_output, 'UTF-8')
-	#ffprobe_output = json.loads(ffprobe_output)
-	# XXX: hot garbage
-	#print(ffprobe_output)
-	for service in service_regexes:
-		matches = re.search('http.+' + service_regexes[service] + '.+', ffprobe_output)
+	if cfg['ffprobe'] != False:
+		import subprocess
+		print('Examining tags:')
+		ffprobe_output = subprocess.check_output(
+			[
+				get_ffprobe_path(),
+				'-show_format',
+				'-v', 'quiet',
+				#'-print_format', 'json',
+				'-print_format', 'default',
+				'-show_streams', # .ogg, https://trac.ffmpeg.org/ticket/4224
+				path,
+			],
+		)
+		ffprobe_output = str(ffprobe_output, 'UTF-8')
+		#ffprobe_output = json.loads(ffprobe_output)
+		# XXX: hot garbage
+		#print(ffprobe_output)
+		for service in service_regexes:
+			matches = re.search('http.+(?:nicovideo|youtube).+' + service_regexes[service] + '.*', ffprobe_output)
 
-		if matches:
-			pv_id = matches.group(1)
-			print(f'o {service} | {pv_id} | {matches.group(0)}')
-			return service, pv_id
-			break
-		else:
-			print(f'x {service}')
+			if matches:
+				pv_id = matches.group(1)
+				print(f'o {service} | {pv_id} | {matches.group(0)}')
+				return service, pv_id
+				break
+			else:
+				print(f'x {service}')
 
 	print(colorama.Fore.RED + 'Could not find a PV ID.')
 	return None, None # path did not match any service urls
@@ -289,11 +290,6 @@ if __name__ == "__main__":
 		help='Files or folders. Folders will be scanned for certain file ' +
 			'types: ' + ' '.join(file_extensions),
 		nargs='+'
-	)
-	parser.add_argument(
-		'--ffprobe',
-		metavar='PATH',
-		help='Location of a ffprobe binary.',
 	)
 	args = parser.parse_args()
 
