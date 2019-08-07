@@ -36,11 +36,12 @@ def service_id_function_soundcloud(pv_id):
 	else:
 		return ytdl_info.get('id') + ' ' + pv_id
 
+# convert $pv_id to VocaDB PV ID
 to_vocadb_pv_id = {
 	'SoundCloud': service_id_function_soundcloud
 }
 
-# conver VocaDB PV ID to pv_id
+# convert VocaDB PV ID to $pv_id
 from_vocadb_pv_id = {
 	'SoundCloud': lambda x:re.search('([a-z0-9_-]+/[a-z0-9_-]+)', x).group(1), # leave the latter part (not the numeric id)
 }
