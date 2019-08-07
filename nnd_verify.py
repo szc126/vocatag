@@ -16,7 +16,7 @@ colorama.init(autoreset=True)
 logging.basicConfig(
 	format = '%(message)s',
 	handlers =  [
-		logging.FileHandler(cfg['LOG_FILENAME']),
+		logging.FileHandler(cfg['log_filename']),
 	],
 )
 
