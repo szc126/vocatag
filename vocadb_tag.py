@@ -300,9 +300,11 @@ def get_song_data(path):
 		matches = re.search('(?:title)=([^/\n]+)', ffprobe_output)
 		if matches:
 			title = matches.group(1)
+			print("title | " + title)
 			matches = re.search('(?:artist)=([^/\n]+)', ffprobe_output)
 			if matches:
 				artist = matches.group(1)
+				print("artist | " + artist)
 			db, request = query_api_song_by_search(title, artist)
 			if request:
 				return db, request, None, None
