@@ -214,7 +214,8 @@ def generate_metadata(path):
 	if service in from_vocadb_pv_id:
 		pv_id = from_vocadb_pv_id[service](pv_id)
 
-	metadata['url'] = service_urls[service].format(pv_id)
+	if pv_id:
+		metadata['url'] = service_urls[service].format(pv_id)
 
 	for artist in request['artists']:
 		#print(artist)
