@@ -253,6 +253,12 @@ def write_tags(path):
 	if metadata is None:
 		return None # vocadb has no data
 
+	print(
+		metadata['title'] + ' - ' +
+		', '.join(metadata['producers']) + ' feat. ' +
+		', '.join(metadata['vocalists'])
+	)
+
 	def metadata_returner(x):
 		metadata_value = metadata[x.group(1)]
 		if type(metadata_value) is list:
