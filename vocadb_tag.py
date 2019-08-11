@@ -221,8 +221,9 @@ def generate_metadata(path):
 		metadata['url'] = service_urls[service].format(pv_id)
 
 	for pv in request['pvs']:
-		metadata['x_urls'].append(pv['url'])
-		if pv['pvType'] != 'Original' and pv['pvId'] == pv_id:
+		if pv['pvType'] == 'Original':
+			metadata['x_urls'].append(pv['url'])
+		elif pv['pvId'] == pv_id:
 			print(colorama.Fore.YELLOW + 'Have you downloaded a reprint?')
 
 	for artist in request['artists']:
