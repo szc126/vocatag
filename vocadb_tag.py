@@ -146,6 +146,7 @@ def write_tags(path):
 		' | ' +
 		metadata['x_db_name']
 	)
+	print('https://' + metadata['x_db'] + '.net/S/' + str(metadata['x_db_id']))
 
 	def metadata_returner(x):
 		metadata_value = metadata[x.group(1)]
