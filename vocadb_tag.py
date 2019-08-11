@@ -126,7 +126,7 @@ def collect_paths(paths):
 def write_tags(path):
 	""""""
 
-	print(colorama.Fore.BLUE + path + ':')
+	print(colorama.Fore.CYAN + path + ':')
 
 	metadata = generate_metadata(path)
 
@@ -135,11 +135,11 @@ def write_tags(path):
 
 	print(colorama.Fore.GREEN + 'Entry found!')
 	print(
-		colorama.Fore.BLUE +
+		colorama.Fore.CYAN +
 		metadata['title'] +
 		colorama.Fore.RESET +
 		' - ' +
-		colorama.Fore.BLUE +
+		colorama.Fore.CYAN +
 		', '.join(metadata['producers']) + ' feat. ' +
 		', '.join(metadata['vocalists']) +
 		colorama.Fore.RESET +
