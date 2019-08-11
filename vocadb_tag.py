@@ -174,6 +174,8 @@ def generate_metadata(path):
 	"""
 
 	db, request, service, pv_id = get_song_data(path)
+	if not request:
+		return None
 
 	metadata = {
 		'title': None,
