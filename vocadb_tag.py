@@ -387,7 +387,7 @@ def query_api_song_by_search(title, artist):
 
 	artist_id = None
 	if artist:
-		request = query_api_artist_by_search(artist)
+		db, request = query_api_artist_by_search(artist)
 		if request:
 			artist_id = request['id']
 
