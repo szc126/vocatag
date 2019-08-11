@@ -195,6 +195,7 @@ def generate_metadata(path):
 			'other_synthesizer': None,
 			'actual_human_people': None,
 		},
+		'x_urls': [],
 	}
 
 	metadata['x_db'] = db
@@ -218,6 +219,11 @@ def generate_metadata(path):
 
 	if pv_id:
 		metadata['url'] = service_urls[service].format(pv_id)
+
+	for pv in request['pvs']:
+		metadata['x_urls'].append(pv['url'])
+		if pv['pvType'] != 'Original' and pv['pvId'] == pv_id:
+			print(colorama.Fore.YELLOW + 'Have you downloaded a reprint?')
 
 	for artist in request['artists']:
 		#print(artist)
@@ -388,7 +394,7 @@ def query_api_song_by_search(title, artist):
 			'songs',
 			{
 				'query': title,
-				'fields': 'Artists',
+				'fields': 'Artists,PVs',
 				'artistId': artist_id,
 			}
 		)
@@ -417,7 +423,7 @@ def query_api_song_by_pv(service, pv_id):
 			{
 				'pvService': service,
 				'pvId': pv_id,
-				'fields': 'Artists',
+				'fields': 'Artists,PVs',
 				'lang': cfg['language'],
 			}
 		)
