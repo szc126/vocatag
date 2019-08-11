@@ -5,10 +5,15 @@ import colorama
 import json
 import os
 import re
-import requests
+import urllib3
 import runpy
 
 cfg = runpy.run_path('config.vocadb_tag.py')
+
+dbs = {
+	'vocadb': 'VocaDB',
+	'utaitedb': 'UtaiteDB',
+}
 
 service_regexes = {
 	'NicoNicoDouga': '(?:nicovideo\.jp/watch/)?([sn]m\d+)',
@@ -46,11 +51,6 @@ from_vocadb_pv_id = {
 	'SoundCloud': lambda x:re.search('([a-z0-9_-]+/[a-z0-9_-]+)', x).group(1), # leave the latter part (not the numeric id)
 }
 
-api_urls_song_by_pv = {
-	'VocaDB': 'https://vocadb.net/api/songs/byPv?pvService={}&pvId={}&fields=Artists&lang={}',
-	'UtaiteDB': 'https://utaitedb.net/api/songs/byPv?pvService={}&pvId={}&fields=Artists&lang={}',
-}
-
 api_urls_add_pv = {
 	'VocaDB': 'https://vocadb.net/Song/Create?PVUrl={}',
 	'UtaiteDB': 'https://utaitedb.net/Song/Create?PVUrl={}',
@@ -60,28 +60,113 @@ user_agent = 'vocadb_tag.py (https://vocadb.net/Profile/u126)'
 
 file_extensions = ('.mp3', '.m4a', '.ogg')
 
-colorama.init(autoreset=True)
+colorama.init(autoreset = True)
 
-def fetch_data(service, pv_id):
-	"""Fetch PV data from the VocaDB/UtaiteDB API"""
+http = urllib3.PoolManager(
+	headers = {
+		'user-agent': user_agent,
+	}
+)
 
-	pv_id_original = pv_id
+def query_api(db, operation, parameters):
+	"""
+	Query the *DB API.
+
+	Args:
+		db: The database name.
+		operation: The API operation.
+		parameters: The parameters (Dict).
+
+	"""
+
+	request = http.request(
+		'GET',
+		'https://' + db + '.net/api/' + operation,
+		fields = parameters,
+	)
+
+	if not request.data == b'null':
+		return json.loads(request.data)
+
+	return None
+
+def query_api_artist_by_search(artist):
+	"""
+	Query the *DB API for an artist.
+
+	Args:
+		artist: The artist.
+	"""
+
+	for db in dbs:
+		request = query_api(
+			db,
+			'artists',
+			{
+				'query': artist,
+			}
+		)
+		if request:
+			if request['items']:
+				return db, request['items'][0]
+
+def query_api_song_by_search(title, artist):
+	"""
+	Query the *DB API for an artist.
+
+	Args:
+		title: The title.
+		artist: (optional) The artist.
+	"""
+
+	artist_id = None
+	if artist:
+		request = query_api_artist_by_search(artist)
+		if request:
+			artist_id = request['id']
+
+	for db in dbs:
+		request = query_api(
+			db,
+			'songs',
+			{
+				'query': title,
+				'fields': 'Artists',
+				'artistId': artist_id,
+			}
+		)
+		if request:
+			if request['items']:
+				return db, request['items'][0]
+
+def query_api_song_by_pv(service, pv_id):
+	"""
+	Query the *DB API for a song, given a service and PV ID.
+
+	Args:
+		service: The PV service.
+		pv_id: The PV ID.
+	"""
+
+	pv_id_original = pv_id # for soundcloud
 
 	if service in to_vocadb_pv_id:
 		pv_id = to_vocadb_pv_id[service](pv_id)
 
-	for db in api_urls_song_by_pv:
-		response = requests.get(
-			api_urls_song_by_pv[db].format(service, pv_id, cfg['language']),
-			headers = {
-				'user-agent': user_agent,
-			},
+	for db in dbs:
+		request = query_api(
+			db,
+			'songs/byPv',
+			{
+				'pvService': service,
+				'pvId': pv_id,
+				'fields': 'Artists',
+				'lang': cfg['language'],
+			}
 		)
 
-		if not response.content == b'null':
-			print(colorama.Fore.GREEN + 'Entry found!')
-			return db, response
-			break
+		if request:
+			return db, request
 
 	print(colorama.Fore.RED + 'Entry not found!')
 	print('Add it?')
@@ -93,23 +178,25 @@ def fetch_data(service, pv_id):
 	return None, None
 
 def check_connectivity():
-	"""Check to see if the VocaDB API can be reached"""
+	"""
+	Check to see if the VocaDB API can be reached.
+	"""
 
 	try:
-		fetch_data('NicoNicoDouga', 'sm26661454')
+		fetch_data('NicoNicoDouga', 'sm3186850')
 	except:
 		print(colorama.Fore.RED + 'Server could not be reached!')
 		quit()
 
-def generate_metadata(service, pv_id, path):
-	"""Parse and rearrange the data from the VocaDB API"""
+def generate_metadata(path):
+	"""
+	Generate metadata for a song.
 
-	db, api_data = fetch_data(service, pv_id)
+	Args:
+		path:
+	"""
 
-	if api_data is None:
-		return None
-
-	api_data = json.loads(api_data.content)
+	db, request, service, pv_id = get_song_data(path)
 
 	metadata = {
 		'title': None,
@@ -131,19 +218,19 @@ def generate_metadata(service, pv_id, path):
 		},
 	}
 
-	metadata['x_db'] = db
+	metadata['x_db'] = dbs[db]
 
-	metadata['x_db_id'] = api_data['id']
+	metadata['x_db_id'] = request['id']
 
 	metadata['x_filename_ext'] = os.path.basename(path)
 	metadata['x_path'] = path
 
-	metadata['title'] = api_data['name']
+	metadata['title'] = request['name']
 
-	metadata['song_type'] = api_data['songType']
+	metadata['song_type'] = request['songType']
 
-	if 'publishDate' in api_data:
-		metadata['publish_date'] = api_data['publishDate']
+	if 'publishDate' in request:
+		metadata['publish_date'] = request['publishDate']
 
 		metadata['year'] = metadata['publish_date'][0:4] # it just werks
 
@@ -152,7 +239,7 @@ def generate_metadata(service, pv_id, path):
 
 	metadata['url'] = service_urls[service].format(pv_id)
 
-	for artist in api_data['artists']:
+	for artist in request['artists']:
 		#print(artist)
 		#print()
 
@@ -183,6 +270,8 @@ def generate_metadata(service, pv_id, path):
 	return metadata
 
 def get_ffprobe_path():
+	""""""
+
 	if cfg['ffprobe'] == True:
 		# https://stackoverflow.com/q/9877462
 		#from distutils.spawn import find_executable
@@ -191,26 +280,28 @@ def get_ffprobe_path():
 	else:
 		return cfg['ffprobe']
 
-def determine_service_and_pv_id(path):
-	"""Determine the service and PV ID"""
+def get_song_data(path):
+	""""""
 
-	print(colorama.Fore.BLUE + path + ':')
+	service = None
+	pv_id = None
+	ffprobe_output = None
 
-	print('Examining path:')
+	print('Examining path for PV ID:')
 	for service in service_regexes:
 		matches = re.search(service_regexes[service], path)
 
 		if matches:
 			pv_id = matches.group(1)
 			print(f'o {service} | {pv_id}')
-			return service, pv_id
-			break
+			db, request = query_api_song_by_pv(service, pv_id)
+			if request:
+				return db, request, service, pv_id
 		else:
 			print(f'x {service}')
 
 	if cfg['ffprobe'] != False:
 		import subprocess
-		print('Examining tags:')
 		ffprobe_output = subprocess.check_output(
 			[
 				get_ffprobe_path(),
@@ -224,39 +315,56 @@ def determine_service_and_pv_id(path):
 		)
 		ffprobe_output = str(ffprobe_output, 'UTF-8')
 		#ffprobe_output = json.loads(ffprobe_output)
-		# XXX: hot garbage
-		#print(ffprobe_output)
+
+		print('Examining tags for PV ID:')
 		for service in service_regexes:
 			matches = re.search('http.+' + service_regexes[service] + '.*', ffprobe_output)
 
 			if matches:
 				pv_id = matches.group(1)
 				print(f'o {service} | {pv_id} | {matches.group(0)}')
-				return service, pv_id
-				break
+				db, request = query_api_song_by_pv(service, pv_id)
+				if request:
+					return db, request, service, pv_id
 			else:
 				print(f'x {service}')
 
-	print(colorama.Fore.RED + 'Could not find a PV ID.')
-	return None, None # path did not match any service urls
+		print('Examining tags for title and artist:')
+		matches = re.search('(?:title)=([^/\n]+)', ffprobe_output)
+		if matches:
+			title = matches.group(1)
+			matches = re.search('(?:artist)=([^/\n]+)', ffprobe_output)
+			if matches:
+				artist = matches.group(1)
+			db, request = query_api_song_by_search(title, artist)
+			if request:
+				return db, request, None, None
+
+	print(colorama.Fore.RED + 'Could not find.')
+	return None, None
 
 def write_tags(path):
-	"""Given the file path, write tags"""
+	""""""
 
-	service, pv_id = determine_service_and_pv_id(path)
+	print(colorama.Fore.BLUE + path + ':')
 
-	if service is None:
-		return None # path did not match any service urls
-
-	metadata = generate_metadata(service, pv_id, path)
+	metadata = generate_metadata(path)
 
 	if metadata is None:
 		return None # vocadb has no data
 
+	print(colorama.Fore.GREEN + 'Entry found!')
 	print(
-		metadata['title'] + ' - ' +
+		colorama.Fore.BLUE +
+		metadata['title'] +
+		colorama.Fore.RESET +
+		' - ' +
+		colorama.Fore.BLUE +
 		', '.join(metadata['producers']) + ' feat. ' +
-		', '.join(metadata['vocalists'])
+		', '.join(metadata['vocalists']) +
+		colorama.Fore.RESET +
+		' | ' +
+		metadata['x_db']
 	)
 
 	def metadata_returner(x):
@@ -286,7 +394,9 @@ def write_mp3tag_format_string():
 		file.write(cfg['tags_output_file_tag_delimiter'].join(format_string) + '\n')
 
 def collect_paths(paths):
-	"""Create list of files from a list of files and folders, traversing through given folders"""
+	"""
+	Create a list of files from an Array of files and folders. Folders are scanned for certain file types.
+	"""
 
 	collected_paths = []
 
@@ -310,6 +420,7 @@ def main(args):
 	# tentative
 	with open(cfg['tags_output_file'], mode='w', encoding='utf-8') as file:
 		file.write('\ufeff') # bom, for mp3tag
+		file.write('\n')
 
 	for path in collect_paths(args.paths):
 		write_tags(path)
