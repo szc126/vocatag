@@ -320,7 +320,7 @@ def get_song_data(path):
 				return db, request, None, None
 
 	print(colorama.Fore.RED + 'Entry not found!')
-	return None, None
+	return None, None, None, None
 
 def get_ffprobe_path():
 	""""""
