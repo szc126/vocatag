@@ -309,7 +309,7 @@ def get_song_data(path):
 			if request:
 				return db, request, None, None
 
-	print(colorama.Fore.RED + 'Could not find.')
+	print(colorama.Fore.RED + 'Entry not found!')
 	return None, None
 
 def get_ffprobe_path():
@@ -423,7 +423,7 @@ def query_api_song_by_pv(service, pv_id):
 		if request:
 			return db, request
 
-	print(colorama.Fore.RED + 'Entry not found!')
+	print(colorama.Fore.RED + 'Could not find a matching entry for this PV!')
 	print('Add it?')
 	for db in api_urls_add_pv:
 		print(api_urls_add_pv[db].format(
