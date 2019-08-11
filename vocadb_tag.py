@@ -144,7 +144,7 @@ def write_tags(path):
 		', '.join(metadata['vocalists']) +
 		colorama.Fore.RESET +
 		' | ' +
-		metadata['x_db']
+		metadata['x_db_name']
 	)
 
 	def metadata_returner(x):
@@ -194,8 +194,8 @@ def generate_metadata(path):
 		},
 	}
 
-	metadata['x_db'] = dbs[db]
-
+	metadata['x_db'] = db
+	metadata['x_db_name'] = dbs[db]
 	metadata['x_db_id'] = request['id']
 
 	metadata['x_filename_ext'] = os.path.basename(path)
