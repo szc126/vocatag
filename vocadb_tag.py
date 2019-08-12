@@ -110,7 +110,7 @@ def write_format_string():
 		for field in cfg['metadata_tags']:
 			format_string.append('%{}%'.format(field.lower()))
 
-		file.write(cfg['tags_output_file_tag_delimiter'].join(format_string) + '\n')
+		file.write(cfg['tags_output_file_tag_delimiter'].join(format_string))
 
 def collect_paths(paths):
 	"""
