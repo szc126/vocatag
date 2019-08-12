@@ -389,6 +389,8 @@ def query_api_artist_by_search(artist):
 			if request['items']:
 				return db, request['items'][0]
 
+	return None, None
+
 def query_api_song_by_search(title, artist):
 	"""
 	Query the *DB API for an artist.
@@ -417,6 +419,8 @@ def query_api_song_by_search(title, artist):
 		if request:
 			if request['items']:
 				return db, request['items'][0]
+
+	return None, None
 
 def query_api_song_by_pv(service, pv_id):
 	"""
