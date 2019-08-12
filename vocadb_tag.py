@@ -208,9 +208,13 @@ def generate_metadata(path):
 		Nothing, (None) if metadata could not be generated.
 	"""
 
-	db, request, service, pv_id, detection_method = get_song_data(path)
+	db, request, pv_index, detection_method = get_song_data(path)
 	if not request:
 		return None
+
+	service = request['pvs'][pv_index]['service']
+	pv_id = request['pvs'][pv_index]['pvId']
+	uploader = request['pvs'][pv_index]['author']
 
 	metadata = {
 		'title': None,
@@ -219,6 +223,7 @@ def generate_metadata(path):
 		'producers': [],
 		'vocalists': [],
 		'url': [],
+		'uploader': None,
 
 		# meta-metadata
 		'x_db': None,
@@ -232,6 +237,7 @@ def generate_metadata(path):
 		},
 		'x_urls': [],
 		'x_detection_method': detection_method,
+		'x_is_reprint': None,
 	}
 
 	metadata['x_db'] = db
@@ -255,12 +261,18 @@ def generate_metadata(path):
 
 	if pv_id:
 		metadata['url'] = service_urls[service].format(pv_id)
+		metadata['uploader'] = uploader
 
 	for pv in request['pvs']:
 		if pv['pvType'] == 'Original':
 			metadata['x_urls'].append(pv['url'])
 		elif pv['pvId'] == pv_id:
-			print(colorama.Fore.YELLOW + 'Have you downloaded a reprint?')
+			print(
+				colorama.Fore.YELLOW + 'Have you downloaded a reprint? (' +
+				colorama.Fore.RESET + uploader +
+				colorama.Fore.YELLOW + ')'
+			)
+			metadata['x_is_reprint'] = uploader
 
 	for artist in request['artists']:
 		#print(artist)
@@ -301,7 +313,7 @@ def get_song_data(path):
 
 	Returns:
 		Song data (tuple).
-		Database; request; service; PV ID; detection method.
+		Database; *DB data (Dict); PV index; detection method.
 
 		Nothing, (None) if appropriate.
 	"""
@@ -319,7 +331,8 @@ def get_song_data(path):
 			print(f'o {service} | {pv_id}')
 			db, request = query_api_song_by_pv(service, pv_id)
 			if request:
-				return db, request, service, pv_id, 'path-pv'
+				pv_index = which_pv(request, service, pv_id)
+				return db, request, pv_index, 'path-pv'
 		else:
 			print(f'x {service}')
 
@@ -348,7 +361,8 @@ def get_song_data(path):
 				print(f'o {service} | {pv_id} | {matches.group(0)}')
 				db, request = query_api_song_by_pv(service, pv_id)
 				if request:
-					return db, request, service, pv_id, 'tags-pv'
+					pv_index = which_pv(request, service, pv_id)
+					return db, request, pv_index, 'tags-pv'
 			else:
 				print(f'x {service}')
 
@@ -366,10 +380,27 @@ def get_song_data(path):
 			db, request = query_api_song_by_search(title, artist)
 			if request:
 				print(colorama.Back.YELLOW + 'This may be wrong.')
-				return db, request, None, None, 'tags-search'
+				return db, request, None, 'tags-search'
 
 	print(colorama.Fore.RED + 'Entry not found!')
-	return None, None, None, None, None
+	return None, None, None, None
+
+def which_pv(request, service, pv_id):
+	"""
+	Look through the PVs listed in *DB data, and find the one that matches the given data.
+
+	Args:
+		request: *DB data (Dict).
+		service: A PV service.
+		pv_id: A PV ID.
+
+	Returns:
+		The index of the PV in the DB* data.
+	"""
+
+	for i, pv in enumerate(request['pvs']):
+		if (service == pv['service'] and pv_id == pv['pvId']):
+			return i
 
 def get_ffprobe_path():
 	"""
