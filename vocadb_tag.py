@@ -146,9 +146,8 @@ def write_tags(path):
 		', '.join(metadata['vocalists']) +
 		colorama.Fore.RESET +
 		' | ' +
-		metadata['x_db_name']
+		'https://' + metadata['x_db'] + '.net/S/' + str(metadata['x_db_id'])
 	)
-	print('https://' + metadata['x_db'] + '.net/S/' + str(metadata['x_db_id']))
 
 	def metadata_returner(x):
 		metadata_value = metadata[x.group(1)]
