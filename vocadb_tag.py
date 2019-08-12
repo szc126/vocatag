@@ -71,6 +71,8 @@ http = urllib3.PoolManager(
 )
 
 def main(args):
+	""""""
+
 	#check_connectivity()
 
 	write_format_string()
@@ -88,7 +90,7 @@ def main(args):
 
 def check_connectivity():
 	"""
-	Check to see if the VocaDB API can be reached.
+	Check to see if the VocaDB API can be reached. Quit on failure.
 	"""
 
 	try:
@@ -98,6 +100,10 @@ def check_connectivity():
 		quit()
 
 def write_format_string():
+	"""
+	Write the format string to a text file.
+	"""
+
 	with open(cfg['formatstring_output_file'], mode='w', encoding='utf-8') as file:
 		format_string = []
 
@@ -109,6 +115,12 @@ def write_format_string():
 def collect_paths(paths):
 	"""
 	Create a list of files from an Array of files and folders. Folders are scanned for certain file types.
+
+	Args:
+		paths: Paths to files and/or folders (Array).
+
+	Returns:
+		Paths to music files (Array).
 	"""
 
 	collected_paths = []
@@ -126,7 +138,12 @@ def collect_paths(paths):
 	return collected_paths
 
 def write_tags(path):
-	""""""
+	"""
+	Write tags for a song to a text file.
+
+	Args:
+		path: A path to a song.
+	"""
 
 	print(colorama.Fore.CYAN + path + ':')
 
@@ -183,7 +200,12 @@ def generate_metadata(path):
 	Generate metadata for a song.
 
 	Args:
-		path:
+		path: A path to a song.
+
+	Returns:
+		Metadata (Dict).
+
+		Nothing, (None) if metadata could not be generated.
 	"""
 
 	db, request, service, pv_id, detection_method = get_song_data(path)
@@ -271,7 +293,18 @@ def generate_metadata(path):
 	return metadata
 
 def get_song_data(path):
-	""""""
+	"""
+	Generate metadata for a song.
+
+	Args:
+		path: A path to a song.
+
+	Returns:
+		Song data (tuple).
+		Database; request; service; PV ID; detection method.
+
+		Nothing, (None) if appropriate.
+	"""
 
 	service = None
 	pv_id = None
@@ -339,7 +372,12 @@ def get_song_data(path):
 	return None, None, None, None, None
 
 def get_ffprobe_path():
-	""""""
+	"""
+	Get the path of a ffprobe executable/binary.
+
+	Returns:
+		The path of an ffprobe executable/binary.
+	"""
 
 	if cfg['ffprobe'] == True:
 		# https://stackoverflow.com/q/9877462
@@ -356,8 +394,12 @@ def query_api(db, operation, parameters):
 	Args:
 		db: The database name.
 		operation: The API operation.
-		parameters: The parameters (Dict).
+		parameters: Parameters (Dict).
 
+	Returns:
+		*DB data (Dict).
+
+		Nothing, (None) if the API does not return data.
 	"""
 
 	request = http.request(
@@ -376,7 +418,12 @@ def query_api_artist_by_search(artist):
 	Query the *DB API for an artist.
 
 	Args:
-		artist: The artist.
+		artist: An artist.
+
+	Returns:
+		Database name; *DB data (Dict).
+
+		Nothing, (None) if the API does not return results.
 	"""
 
 	for db in dbs:
@@ -395,11 +442,16 @@ def query_api_artist_by_search(artist):
 
 def query_api_song_by_search(title, artist):
 	"""
-	Query the *DB API for an artist.
+	Query the *DB API for a song.
 
 	Args:
-		title: The title.
-		artist: (optional) The artist.
+		title: A title.
+		artist: (optional) An artist.
+
+	Returns:
+		Database name; *DB data (Dict).
+
+		Nothing, (None) if the API does not return results.
 	"""
 
 	artist_id = None
@@ -429,8 +481,13 @@ def query_api_song_by_pv(service, pv_id):
 	Query the *DB API for a song, given a service and PV ID.
 
 	Args:
-		service: The PV service.
-		pv_id: The PV ID.
+		service: A PV service.
+		pv_id: A PV ID.
+
+	Returns:
+		Database name; *DB data (Dict).
+
+		Nothing, (None) if the API does not return results.
 	"""
 
 	pv_id_original = pv_id # for soundcloud
