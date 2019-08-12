@@ -73,7 +73,7 @@ http = urllib3.PoolManager(
 def main(args):
 	#check_connectivity()
 
-	write_mp3tag_format_string()
+	write_format_string()
 
 	# tentative
 	open(cfg['tags_output_file'], mode='w', encoding='utf-8').close()
@@ -97,7 +97,7 @@ def check_connectivity():
 		print(colorama.Fore.RED + 'Server could not be reached!')
 		quit()
 
-def write_mp3tag_format_string():
+def write_format_string():
 	with open(cfg['formatstring_output_file'], mode='w', encoding='utf-8') as file:
 		format_string = []
 
