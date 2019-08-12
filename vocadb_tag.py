@@ -186,7 +186,7 @@ def generate_metadata(path):
 		path:
 	"""
 
-	db, request, service, pv_id = get_song_data(path)
+	db, request, service, pv_id, detection_method = get_song_data(path)
 	if not request:
 		return None
 
@@ -209,6 +209,7 @@ def generate_metadata(path):
 			'actual_human_people': None,
 		},
 		'x_urls': [],
+		'x_detection_method': detection_method,
 	}
 
 	metadata['x_db'] = db
@@ -285,7 +286,7 @@ def get_song_data(path):
 			print(f'o {service} | {pv_id}')
 			db, request = query_api_song_by_pv(service, pv_id)
 			if request:
-				return db, request, service, pv_id
+				return db, request, service, pv_id, 'path-pv'
 		else:
 			print(f'x {service}')
 
@@ -314,7 +315,7 @@ def get_song_data(path):
 				print(f'o {service} | {pv_id} | {matches.group(0)}')
 				db, request = query_api_song_by_pv(service, pv_id)
 				if request:
-					return db, request, service, pv_id
+					return db, request, service, pv_id, 'tags-pv'
 			else:
 				print(f'x {service}')
 
@@ -331,10 +332,11 @@ def get_song_data(path):
 				artist = None
 			db, request = query_api_song_by_search(title, artist)
 			if request:
-				return db, request, None, None
+				print(colorama.Back.YELLOW + 'This may be wrong.')
+				return db, request, None, None, 'tags-search'
 
 	print(colorama.Fore.RED + 'Entry not found!')
-	return None, None, None, None
+	return None, None, None, None, None
 
 def get_ffprobe_path():
 	""""""
