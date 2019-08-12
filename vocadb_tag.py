@@ -156,6 +156,10 @@ def write_tags(path):
 			metadata_value = cfg['metadata_multi_value_delimiter'].join(metadata_value)
 		elif type(metadata_value) is int:
 			metadata_value = str(metadata_value)
+
+		if metadata_value == '':
+			return cfg['metadata_empty_placeholder']
+
 		return metadata_value
 
 	with open(cfg['tags_output_file'], mode='a', encoding='utf-8') as file:

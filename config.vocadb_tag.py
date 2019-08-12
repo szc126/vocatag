@@ -17,5 +17,6 @@ metadata_tags = {
 	'__filename_ext': '$x_filename_ext', # mp3tag
 }
 metadata_multi_value_delimiter = '\\\\' # as in "初音ミク; GUMI"
+metadata_empty_placeholder = '-' # foobar2000
 
 ffprobe = True # True, False, <path>
