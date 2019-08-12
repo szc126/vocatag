@@ -4,6 +4,7 @@ language = 'Default' # Default, Japanese, Romaji, English
 
 tags_output_file = '.vocadb_tag.log'
 tags_output_file_tag_delimiter = ' #~~# '
+bom = False # mp3tag
 formatstring_output_file = '.vocadb_tag.formatstring.log'
 
 metadata_tags = {

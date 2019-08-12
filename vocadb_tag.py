@@ -76,9 +76,11 @@ def main(args):
 	write_mp3tag_format_string()
 
 	# tentative
-	with open(cfg['tags_output_file'], mode='w', encoding='utf-8') as file:
-		file.write('\ufeff') # bom, for mp3tag
-		file.write('\n')
+	open(cfg['tags_output_file'], mode='w', encoding='utf-8').close()
+	if cfg['bom']:
+		with open(cfg['tags_output_file'], mode='a', encoding='utf-8') as file:
+			file.write('\ufeff') # bom, for mp3tag
+			file.write('\n')
 
 	for path in collect_paths(args.paths):
 		write_tags(path)
