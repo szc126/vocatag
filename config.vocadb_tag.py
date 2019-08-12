@@ -19,4 +19,4 @@ metadata_tags = {
 metadata_multi_value_delimiter = '\\\\' # as in "初音ミク; GUMI"
 metadata_empty_placeholder = '-' # foobar2000
 
-ffprobe = True # True, False, <path>
+ffprobe = True # True, False, r"D:\bin\ffmpeg\ffprobe.exe"
