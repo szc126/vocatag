@@ -151,10 +151,18 @@ def write_tags(path):
 
 	def metadata_returner(x):
 		metadata_value = metadata[x.group(1)]
+
 		if type(metadata_value) is list:
 			metadata_value = cfg['metadata_multi_value_delimiter'].join(metadata_value)
 		elif type(metadata_value) is int:
 			metadata_value = str(metadata_value)
+		elif type(metadata_value) is dict:
+			# XXX
+			temp = ""
+			for key in metadata_value:
+				if metadata_value[key]:
+					temp += key + '+'
+			metadata_value = temp
 
 		if metadata_value == '':
 			return cfg['metadata_empty_placeholder']
