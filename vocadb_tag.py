@@ -159,7 +159,7 @@ def write_tags(path):
 		colorama.Fore.RESET +
 		' - ' +
 		colorama.Fore.CYAN +
-		', '.join(metadata['producers']) + ' feat. ' +
+		', '.join(metadata['composers']) + ' feat. ' +
 		', '.join(metadata['vocalists']) +
 		colorama.Fore.RESET +
 		' | ' +
@@ -228,22 +228,18 @@ def generate_metadata(path):
 	metadata = {
 		'title': None,
 		'song_type': None,
-		'publish_date': None, 'year': None,
-		'producers': [],
+		'date': None,
+		'year': None,
+		'composers': [],
 		'vocalists': [],
+		'vocalists_support': [],
 		'url': [],
 		'uploader': None,
 
 		# meta-metadata
 		'x_db': None,
 		'x_db_id': None,
-		'x_synthesizers': {
-			'vocaloid': None,
-			'utau': None,
-			'cevio': None,
-			'other_synthesizer': None,
-			'actual_human_people': None,
-		},
+		'x_vocalist_types': {},
 		'x_urls': [],
 		'x_detection_method': detection_method,
 		'x_is_reprint': None,
@@ -261,9 +257,9 @@ def generate_metadata(path):
 	metadata['song_type'] = request['songType']
 
 	if 'publishDate' in request:
-		metadata['publish_date'] = request['publishDate']
+		metadata['date'] = request['publishDate']
 
-		metadata['year'] = metadata['publish_date'][0:4] # it just werks
+		metadata['year'] = request['publishDate'][0:4] # it just werks
 
 	if service in from_vocadb_pv_id:
 		pv_id = from_vocadb_pv_id[service](pv_id)
@@ -287,29 +283,26 @@ def generate_metadata(path):
 		#print(artist)
 		#print()
 
-		if not 'artist' in artist: # custom artist
-			pass
-		elif artist['artist']['artistType'] == 'Vocaloid':
-			metadata['x_synthesizers']['vocaloid'] = True
-			metadata['vocalists'].append(artist['name'])
-		elif artist['artist']['artistType'] == 'UTAU':
-			metadata['x_synthesizers']['utau'] = True
-			metadata['vocalists'].append(artist['name'])
-		elif artist['artist']['artistType'] == 'CeVIO':
-			metadata['x_synthesizers']['cevio'] = True
-			metadata['vocalists'].append(artist['name'])
-		elif artist['artist']['artistType'] == 'OtherVoiceSynthesizer':
-			metadata['x_synthesizers']['other_synthesizer'] = True
-			metadata['vocalists'].append(artist['name'])
-		elif ('Vocalist' in artist['roles']) or ('Vocalist' in artist['categories'] and 'Default' in artist['roles']): # what's the difference between 'roles' and 'effectiveRoles'
-			metadata['x_synthesizers']['actual_human_people'] = True
-			metadata['vocalists'].append(artist['name'])
+		# what's the difference between 'roles' and 'effectiveRoles'
 
-		elif 'Composer' in artist['roles']:
-			metadata['producers'].append(artist['name'])
+		if (
+			('Vocalist' in artist['roles']) or
+			('Vocalist' in artist['categories'] and 'Default' in artist['roles'])
+		):
+			if 'artistType' in artist['artist']:
+				artist_type = artist['artist']['artistType']
+				metadata['x_vocalist_types'][artist_type] = True
 
-		elif 'Default' in artist['roles'] and 'Producer' in artist['categories']:
-			metadata['producers'].append(artist['name'])
+			if artist['isSupport']:
+				metadata['vocalists_support'].append(artist['name'])
+			else:
+				metadata['vocalists'].append(artist['name'])
+
+		if (
+			('Composer' in artist['roles']) or
+			('Producer' in artist['categories'] and 'Default' in artist['roles'])
+		):
+			metadata['composers'].append(artist['name'])
 
 	return metadata
 
