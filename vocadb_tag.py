@@ -166,31 +166,40 @@ def write_tags(path):
 		'https://' + metadata['x_db'] + '.net/S/' + str(metadata['x_db_id'])
 	)
 
-	def metadata_returner(x):
-		metadata_value = metadata[x.group(1)]
-
-		if type(metadata_value) is list:
-			metadata_value = cfg['metadata_multi_value_delimiter'].join(metadata_value)
-		elif type(metadata_value) is int:
-			metadata_value = str(metadata_value)
-		elif type(metadata_value) is dict:
+	# XXX
+	def to_tag_string(x):
+		if type(x) is list:
+			x = cfg['metadata_multi_value_delimiter'].join(x)
+		elif type(x) is int:
+			x = str(x)
+		elif type(x) is dict:
 			# XXX
 			temp = ""
-			for key in metadata_value:
-				if metadata_value[key]:
+			for key in x:
+				if x[key]:
 					temp += key + '+'
-			metadata_value = temp
+			x = temp
 
-		if metadata_value == '':
-			return cfg['metadata_empty_placeholder']
+		if x == '':
+			x = cfg['metadata_empty_placeholder']
 
-		return metadata_value
+		return x
+
+	# XXX
+	#for k in metadata:
+		#metadata[k] = to_tag_string(metadata[k]))
+
+	def metadata_returner(x):
+		return to_tag_string(metadata[x.group(1)])
 
 	with open(cfg['tags_output_file'], mode='a', encoding='utf-8') as file:
 		metadata_values = []
 
 		for field in cfg['metadata_tags']:
-			metadata_value = re.sub('\$([a-z_]+)', metadata_returner, cfg['metadata_tags'][field]) # pattern, repl, string
+			if callable(cfg['metadata_tags'][field]):
+				metadata_value = cfg['metadata_tags'][field](metadata)
+			else:
+				metadata_value = re.sub('\$([a-z_]+)', metadata_returner, cfg['metadata_tags'][field]) # pattern, repl, string
 			metadata_values.append(metadata_value)
 
 		file.write(cfg['tags_output_file_tag_delimiter'].join(metadata_values) + '\n')
