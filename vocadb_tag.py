@@ -78,9 +78,9 @@ def main(args):
 	write_format_string()
 
 	# tentative
-	open(cfg['tags_output_file'], mode='w', encoding='utf-8').close()
+	open(cfg['tags_output_file'], mode = 'w', encoding = 'utf-8').close()
 	if cfg['bom']:
-		with open(cfg['tags_output_file'], mode='a', encoding='utf-8') as file:
+		with open(cfg['tags_output_file'], mode = 'a', encoding = 'utf-8') as file:
 			file.write('\ufeff') # bom, for mp3tag
 			file.write('\n')
 
@@ -104,7 +104,7 @@ def write_format_string():
 	Write the format string to a text file.
 	"""
 
-	with open(cfg['formatstring_output_file'], mode='w', encoding='utf-8') as file:
+	with open(cfg['formatstring_output_file'], mode = 'w', encoding = 'utf-8') as file:
 		format_string = []
 
 		for field in cfg['metadata_tags']:
@@ -192,7 +192,7 @@ def write_tags(path):
 	def metadata_returner(x):
 		return to_tag_string(metadata[x.group(1)])
 
-	with open(cfg['tags_output_file'], mode='a', encoding='utf-8') as file:
+	with open(cfg['tags_output_file'], mode = 'a', encoding = 'utf-8') as file:
 		metadata_values = []
 
 		for field in cfg['metadata_tags']:
@@ -553,13 +553,13 @@ def query_api_song_by_pv(service, pv_id):
 	return None, None
 
 if __name__ == "__main__":
-	parser = argparse.ArgumentParser(description='For PATH(s), retrieve song metadata from VocaDB or UtaiteDB.')
+	parser = argparse.ArgumentParser(description = 'For PATH(s), retrieve song metadata from VocaDB or UtaiteDB.')
 	parser.add_argument(
 		'paths',
-		metavar='[PATH]...',
-		help='Files or folders. Folders will be scanned for certain file ' +
+		metavar = '[PATH]...',
+		help = 'Files or folders. Folders will be scanned for certain file ' +
 			'types: ' + ' '.join(file_extensions),
-		nargs='+'
+		nargs = '+',
 	)
 	args = parser.parse_args()
 
