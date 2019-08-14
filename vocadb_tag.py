@@ -401,7 +401,10 @@ def which_pv(request, service, pv_id):
 	"""
 
 	for i, pv in enumerate(request['pvs']):
-		if (service == pv['service'] and pv_id == pv['pvId']):
+		pv_id_new = pv['pvId']
+		if service in from_vocadb_pv_id:
+			pv_id_new = to_vocadb_pv_id[service](pv_id)
+		if (service == pv['service'] and pv_id == pv_id_new):
 			return i
 
 def get_ffprobe_path():
