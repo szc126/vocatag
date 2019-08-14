@@ -16,9 +16,9 @@ dbs = {
 }
 
 service_regexes = {
-	'NicoNicoDouga': '(?:nicovideo\.jp/watch/)?([sn]m\d+)',
+	'NicoNicoDouga': '(?:watch/)?([sn]m\d+)',
 	'SoundCloud': '(?:soundcloud\.com/)([a-z0-9_-]+/[a-z0-9_-]+)',
-	'Youtube': '(?:youtube\.com/watch\?v=|youtu\.be/)?([A-Za-z0-9_-]{11})',
+	'Youtube': '(?:[?&]v=|youtu\.be/)?([A-Za-z0-9_-]{11})',
 }
 
 service_urls = {
