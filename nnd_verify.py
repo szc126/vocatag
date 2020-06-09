@@ -89,7 +89,7 @@ def verify_filesize(path):
 			print(colorama.Back.RED + f'  X ({size_real} != {size_hq} != {size_lq}, neither)')
 			logging.warning(f'https://www.nicovideo.jp/watch/{id}')
 
-def main():
+def main(args):
 	check_connectivity()
 
 	paths = collect_paths(args.paths)
@@ -107,4 +107,4 @@ if __name__ == "__main__":
 	)
 	args = parser.parse_args()
 
-	main()
+	main(args)
