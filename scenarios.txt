@@ -1,0 +1,9 @@
+* pv id is embedded in file name
+  * pv is not registered
+  * pv is a reprint
+* pv id is found in tags
+  * pv is not registered
+  * pv is a reprint
+* song is found by search
+  * (incorrect identification)
+* song is not found at all
