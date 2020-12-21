@@ -135,7 +135,7 @@ def collect_paths(paths):
 						path = os.path.join(dir, file)
 						collected_paths.append(path)
 
-	return collected_paths
+	return sorted(collected_paths)
 
 def write_tags(path):
 	"""
