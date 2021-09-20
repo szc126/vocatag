@@ -499,16 +499,28 @@ def query_api_song_by_search(title, artist):
 			artist_id = request['id']
 
 	for server in servers:
-		request = query_api(
-			server,
-			'songs',
-			{
-				'query': title,
-				'fields': 'Artists,PVs',
-				'artistId[]': artist_id,
-				'childVoicebanks': True,
-			}
-		)
+		if artist_id:
+			request = query_api(
+				server,
+				'songs',
+				{
+					'query': title,
+					'fields': 'Artists,PVs',
+					'artistId[]': artist_id,
+					'sort': 'RatingScore',
+					'childVoicebanks': True,
+				}
+			)
+		else:
+			request = query_api(
+				server,
+				'songs',
+				{
+					'query': title,
+					'fields': 'Artists,PVs',
+					'sort': 'RatingScore',
+				}
+			)
 		if request:
 			if request['items']:
 				return server, request['items'][0]
