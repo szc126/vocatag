@@ -8,7 +8,17 @@ import re
 import urllib3
 import runpy
 
-cfg = runpy.run_path('config.vocadb_tag.py')
+# https://stackoverflow.com/a/53222876
+cfg = os.path.join(
+	(
+		os.environ.get('APPDATA') or
+		os.environ.get('XDG_CONFIG_HOME') or
+		os.path.join(os.environ['HOME'], '.config') or
+		"."
+	),
+	"config.vocadb_tag.py"
+)
+cfg = runpy.run_path(cfg)
 
 dbs = {
 	'vocadb': 'VocaDB',
