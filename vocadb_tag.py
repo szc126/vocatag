@@ -185,12 +185,8 @@ def write_tags(path):
 		elif type(x) is int:
 			x = str(x)
 		elif type(x) is dict:
-			# XXX
-			temp = ""
-			for key in x:
-				if x[key]:
-					temp += key + '+'
-			x = temp
+			x = x.keys()
+			x = cfg['metadata_multi_value_delimiter'].join(x)
 
 		if x == '':
 			x = cfg['metadata_empty_placeholder']
