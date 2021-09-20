@@ -20,9 +20,9 @@ cfg = os.path.join(
 )
 cfg = runpy.run_path(cfg)
 
-dbs = {
-	'vocadb': 'VocaDB',
-	'utaitedb': 'UtaiteDB',
+servers = {
+	'https://vocadb.net': 'VocaDB',
+	'https://utaitedb.net': 'UtaiteDB',
 }
 
 service_regexes = {
@@ -63,20 +63,13 @@ from_vocadb_pv_id = {
 	'SoundCloud': lambda x:re.search('([a-z0-9_-]+/[a-z0-9_-]+)', x).group(1), # leave the latter part (not the numeric id)
 }
 
-api_urls_add_pv = {
-	'VocaDB': 'https://vocadb.net/Song/Create?PVUrl={}',
-	'UtaiteDB': 'https://utaitedb.net/Song/Create?PVUrl={}',
-}
-
-user_agent = 'vocadb_tag.py (https://vocadb.net/Profile/u126)'
-
 file_extensions = ('.mp3', '.m4a', '.ogg')
 
 colorama.init(autoreset = True)
 
 http = urllib3.PoolManager(
 	headers = {
-		'user-agent': user_agent,
+		'user-agent': 'vocadb_tag.py (https://vocadb.net/Profile/u126)',
 	}
 )
 
@@ -159,10 +152,11 @@ def write_tags(path):
 
 	metadata = generate_metadata(path)
 
+	# search failed
 	if metadata is None:
 		with open(cfg['tags_output_file'], mode = 'a', encoding = 'utf-8') as file:
 			file.write('\n')
-		return None # vocadb has no data
+		return None
 
 	print(colorama.Fore.GREEN + 'Entry found!')
 	print(
@@ -175,7 +169,7 @@ def write_tags(path):
 		', '.join(metadata['vocalists']) +
 		colorama.Fore.RESET +
 		' | ' +
-		'https://' + metadata['x_db'] + '.net/S/' + str(metadata['x_db_id'])
+		metadata['x_db'] + '/S/' + str(metadata['x_db_id'])
 	)
 
 	# XXX
@@ -225,7 +219,7 @@ def generate_metadata(path):
 		Nothing, (None) if metadata could not be generated.
 	"""
 
-	db, request, pv_index, detection_method = get_song_data(path)
+	server, request, pv_index, detection_method = get_song_data(path)
 	if not request:
 		return None
 
@@ -253,8 +247,8 @@ def generate_metadata(path):
 		'x_is_reprint': None,
 	}
 
-	metadata['x_db'] = db
-	metadata['x_db_name'] = dbs[db]
+	metadata['x_db'] = server
+	metadata['x_db_name'] = servers[server]
 	metadata['x_db_id'] = request['id']
 
 	metadata['x_filename_ext'] = os.path.basename(path)
@@ -339,10 +333,10 @@ def get_song_data(path):
 		if matches:
 			pv_id = matches.group(1)
 			print(f'o {service} | {pv_id}')
-			db, request = query_api_song_by_pv(service, pv_id)
+			server, request = query_api_song_by_pv(service, pv_id)
 			if request:
 				pv_index = which_pv(request, service, pv_id)
-				return db, request, pv_index, 'path-pv'
+				return server, request, pv_index, 'path-pv'
 		else:
 			print(f'x {service}')
 
@@ -369,10 +363,10 @@ def get_song_data(path):
 			if matches:
 				pv_id = matches.group(1)
 				print(f'o {service} | {pv_id} | {matches.group(0)}')
-				db, request = query_api_song_by_pv(service, pv_id)
+				server, request = query_api_song_by_pv(service, pv_id)
 				if request:
 					pv_index = which_pv(request, service, pv_id)
-					return db, request, pv_index, 'tags-pv'
+					return server, request, pv_index, 'tags-pv'
 			else:
 				print(f'x {service}')
 
@@ -387,10 +381,10 @@ def get_song_data(path):
 				print("artist | " + artist)
 			else:
 				artist = None
-			db, request = query_api_song_by_search(title, artist)
+			server, request = query_api_song_by_search(title, artist)
 			if request:
 				print(colorama.Back.YELLOW + 'This may be wrong.')
-				return db, request, None, 'tags-search'
+				return server, request, None, 'tags-search'
 
 	print(colorama.Fore.RED + 'Entry not found!')
 	return None, None, None, None
@@ -431,12 +425,12 @@ def get_ffprobe_path():
 	else:
 		return cfg['ffprobe']
 
-def query_api(db, operation, parameters):
+def query_api(server, operation, parameters):
 	"""
 	Query the *DB API.
 
 	Args:
-		db: The database name.
+		server: The database name.
 		operation: The API operation.
 		parameters: Parameters (Dict).
 
@@ -448,7 +442,7 @@ def query_api(db, operation, parameters):
 
 	request = http.request(
 		'GET',
-		'https://' + db + '.net/api/' + operation,
+		server + '/api/' + operation,
 		fields = parameters,
 	)
 
@@ -470,9 +464,9 @@ def query_api_artist_by_search(artist):
 		Nothing, (None) if the API does not return results.
 	"""
 
-	for db in dbs:
+	for server in servers:
 		request = query_api(
-			db,
+			server,
 			'artists',
 			{
 				'query': artist,
@@ -480,7 +474,7 @@ def query_api_artist_by_search(artist):
 		)
 		if request:
 			if request['items']:
-				return db, request['items'][0]
+				return server, request['items'][0]
 
 	return None, None
 
@@ -500,13 +494,13 @@ def query_api_song_by_search(title, artist):
 
 	artist_id = None
 	if artist:
-		db, request = query_api_artist_by_search(artist)
+		server, request = query_api_artist_by_search(artist)
 		if request:
 			artist_id = request['id']
 
-	for db in dbs:
+	for server in servers:
 		request = query_api(
-			db,
+			server,
 			'songs',
 			{
 				'query': title,
@@ -517,7 +511,7 @@ def query_api_song_by_search(title, artist):
 		)
 		if request:
 			if request['items']:
-				return db, request['items'][0]
+				return server, request['items'][0]
 
 	return None, None
 
@@ -540,9 +534,9 @@ def query_api_song_by_pv(service, pv_id):
 	if service in to_vocadb_pv_id:
 		pv_id = to_vocadb_pv_id[service](pv_id)
 
-	for db in dbs:
+	for server in servers:
 		request = query_api(
-			db,
+			server,
 			'songs/byPv',
 			{
 				'pvService': service,
@@ -553,12 +547,12 @@ def query_api_song_by_pv(service, pv_id):
 		)
 
 		if request:
-			return db, request
+			return server, request
 
 	print(colorama.Fore.RED + 'Could not find a matching entry for this PV!')
 	print('Add it?')
-	for db in api_urls_add_pv:
-		print(api_urls_add_pv[db].format(
+	for server in servers:
+		print(server + '/Song/Create?PVUrl={}'.format(
 			service_urls[service].format(pv_id_original)
 		))
 

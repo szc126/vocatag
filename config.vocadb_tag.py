@@ -32,7 +32,7 @@ metadata_tags = {
 		.replace('Vocaloid', 'VOCALOID')
 	,
 	'url': '$url',
-	'comment': '$song_type song | $x_db_id@$x_db_name',
+	'comment': '$song_type song | $x_db/S/$x_db_id',
 }
 metadata_multi_value_delimiter = ';' # as in "初音ミク; GUMI"
 metadata_empty_placeholder = '-' # foobar2000
