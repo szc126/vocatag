@@ -160,6 +160,8 @@ def write_tags(path):
 	metadata = generate_metadata(path)
 
 	if metadata is None:
+		with open(cfg['tags_output_file'], mode = 'a', encoding = 'utf-8') as file:
+			file.write('\n')
 		return None # vocadb has no data
 
 	print(colorama.Fore.GREEN + 'Entry found!')
