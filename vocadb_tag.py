@@ -511,7 +511,8 @@ def query_api_song_by_search(title, artist):
 			{
 				'query': title,
 				'fields': 'Artists,PVs',
-				'artistId': artist_id,
+				'artistId[]': artist_id,
+				'childVoicebanks': True,
 			}
 		)
 		if request:
