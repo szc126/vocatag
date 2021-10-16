@@ -223,9 +223,10 @@ def generate_metadata(path):
 	if not request:
 		return None
 
-	service = request['pvs'][pv_index]['service'] if pv_index else None
-	pv_id = request['pvs'][pv_index]['pvId'] if pv_index else None
-	uploader = request['pvs'][pv_index]['author'] if pv_index else None
+	# "is not None": 0 is falsy
+	service = request['pvs'][pv_index]['service'] if pv_index is not None else None
+	pv_id = request['pvs'][pv_index]['pvId'] if pv_index is not None else None
+	uploader = request['pvs'][pv_index]['author'] if pv_index is not None else None
 
 	metadata = {
 		'title': None,
