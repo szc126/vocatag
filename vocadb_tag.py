@@ -40,10 +40,10 @@ service_urls = {
 def service_id_function_soundcloud(pv_id):
 	""""""
 
-	import youtube_dl
+	import yt_dlp
 
 	try:
-		ytdl = youtube_dl.YoutubeDL()
+		ytdl = yt_dlp.YoutubeDL()
 		ytdl_info = ytdl.extract_info(
 			service_urls['SoundCloud'].format(pv_id),
 			download = False,
