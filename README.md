@@ -1,5 +1,5 @@
 ```console
-$ /media/e-docs/docs/prog/g.z/vocatag/vocadb_tag.py /tmp/demo/
+$ /tmp/vocatag/vocadb_tag.py /tmp/demo/
 /tmp/demo/hqiQSyE4CgI.mp3:
 Examining path for PV ID:
 x NicoNicoDouga
