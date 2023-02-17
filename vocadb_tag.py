@@ -234,6 +234,8 @@ def generate_metadata(path):
 		'date': None,
 		'year': None,
 		'composers': [],
+		'arrangers': [],
+		'band': [],
 		'vocalists': [],
 		'vocalists_support': [],
 		'url': [],
@@ -306,6 +308,20 @@ def generate_metadata(path):
 			('Producer' in artist['categories'] and 'Default' in artist['roles'])
 		):
 			metadata['composers'].append(artist['name'])
+
+		if (
+			('Arranger' in artist['roles']) or
+			('Arranger' in artist['categories'] and 'Default' in artist['roles'])
+		) and (
+			request['songType'] == 'Remix'
+		):
+			metadata['arrangers'].append(artist['name'])
+
+		if (
+			('Band' in artist['roles']) or
+			('Band' in artist['categories'] and 'Default' in artist['roles'])
+		):
+			metadata['band'].append(artist['name'])
 
 	return metadata
 
