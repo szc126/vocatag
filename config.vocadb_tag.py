@@ -3,7 +3,7 @@
 language = 'Default' # Default, Japanese, Romaji, English
 
 tags_output_file = '/tmp/vocadb_tag.log'
-tags_output_file_tag_delimiter = '＄'
+tags_output_file_tag_delimiter = 'ㄅ'
 bom = False # mp3tag
 formatstring_output_file = '/tmp/vocadb_tag.formatstring.log'
 
@@ -39,6 +39,6 @@ metadata_tags = {
 	'comment': '$song_type song | $x_db/S/$x_db_id',
 }
 metadata_multi_value_delimiter = ';' # as in "初音ミク; GUMI"
-metadata_empty_placeholder = '-' # foobar2000
+metadata_empty_placeholder = '-' # for foobar2000
 
 ffprobe = True # True, False, r"D:\bin\ffmpeg\ffprobe.exe"
