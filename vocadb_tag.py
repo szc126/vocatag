@@ -565,7 +565,7 @@ def query_api_song_by_pv(service, pv_id):
 	print(colorama.Fore.RED + 'Could not find a matching entry for this PV!')
 	print('Add it?')
 	for server in servers:
-		print(server + '/Song/Create?PVUrl={}'.format(
+		print(server + '/Song/Create?pvUrl={}'.format(
 			service_urls[service].format(pv_id_original)
 		))
 
