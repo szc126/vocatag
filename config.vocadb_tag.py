@@ -10,13 +10,17 @@ formatstring_output_file = '/tmp/vocadb_tag.formatstring.log'
 metadata_tags = {
 	'__filename_ext': '$x_filename_ext', # mp3tag
 	'title': lambda x: x['title'] + (' (feat. ' + ', '.join(x['vocalists_support']) + ')' if x['vocalists_support'] else ''),
-	'artist': '$vocalists',
-	'composer': lambda x: '' + ';'.join(
+	'artist': lambda x: ';'.join(
+		x['band'] +
+		x['vocalists']
+	),
+	'composer': lambda x: ';'.join(
 		[s for s in [
 			('カバー' if x['song_type'] == 'Cover' and not 'Utaite' in x['x_vocalist_types'] else None),
 			('歌ってみた' if x['song_type'] == 'Cover' and 'Utaite' in x['x_vocalist_types'] else None),
 		] if s] +
-		x['composers']
+		x['composers'] +
+		x['arrangers']
 	),
 	'date': '$year',
 	'genre': lambda x: ';'.join(
