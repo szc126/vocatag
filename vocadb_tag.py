@@ -357,6 +357,25 @@ def get_song_data(path):
 		else:
 			print(f'x {service}')
 
+	# ignore this :)
+	if path.lower().endswith('.url'):
+		print('Examining Internet Shortcut for PV ID:')
+		with open(path, mode = 'r', encoding = 'utf-8') as file:
+			file_content = file.read()
+			for service in service_regexes:
+				matches = re.search('http.+' + service_regexes[service] + '.*', file_content)
+
+				if matches:
+					pv_id = matches.group(1)
+					print(f'o {service} | {pv_id} | {matches.group(0)}')
+					server, request = query_api_song_by_pv(service, pv_id)
+					if request:
+						pv_index = which_pv(request, service, pv_id)
+						return server, request, pv_index, 'tags-pv'
+				else:
+					print(f'x {service}')
+		cfg['ffprobe'] = False
+
 	if cfg['ffprobe'] != False:
 		import subprocess
 		ffprobe_output = subprocess.check_output(
