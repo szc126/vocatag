@@ -14,9 +14,9 @@ cfg = os.path.join(
 		os.environ.get('APPDATA') or
 		os.environ.get('XDG_CONFIG_HOME') or
 		os.path.join(os.environ['HOME'], '.config') or
-		"."
+		"./config"
 	),
-	"config.vocadb_tag.py"
+	"vocadb_tag.py"
 )
 cfg = runpy.run_path(cfg)
 

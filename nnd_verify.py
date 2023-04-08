@@ -9,7 +9,7 @@ import re
 import requests
 import runpy
 
-cfg = runpy.run_path('config.nnd_verify.py')
+cfg = runpy.run_path('config/nnd_verify.py')
 
 colorama.init(autoreset=True)
 
