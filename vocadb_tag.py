@@ -394,7 +394,7 @@ def get_song_data(path):
 
 		print('Examining tags for PV ID:')
 		for service in service_regexes:
-			matches = re.search('http.+' + service_regexes[service] + '.*', ffprobe_output)
+			matches = re.search('(?:URL|url)=http.+' + service_regexes[service] + '.*', ffprobe_output)
 
 			if matches:
 				pv_id = matches.group(1)
@@ -407,11 +407,11 @@ def get_song_data(path):
 				print(f'x {service}')
 
 		print('Examining tags for title and artist:')
-		matches = re.search('(?:title)=([^/\n]+)', ffprobe_output)
+		matches = re.search('(?:title|TITLE)=([^/\n]+)', ffprobe_output)
 		if matches:
 			title = matches.group(1)
 			print("title | " + title)
-			matches = re.search('(?:artist)=([^/\n]+)', ffprobe_output)
+			matches = re.search('(?:artist|ARTIST)=([^/\n]+)', ffprobe_output)
 			if matches:
 				artist = matches.group(1)
 				print("artist | " + artist)
