@@ -26,41 +26,15 @@ servers = {
 }
 
 service_regexes = {
-	'NicoNicoDouga': '(?:watch/)?([sn]m\d+)',
-	'SoundCloud': '(?:soundcloud\.com/)([a-z0-9_-]+/[a-z0-9_-]+)',
-	'Youtube': '(?:[?&]v=|youtu\.be/)?([A-Za-z0-9_-]{11})',
+	'NicoNicoDouga': r'\b([sn]m\d+)\b',
+	'Bilibili': r'\b(BV[A-Za-z0-9]+|av\d+)\b',
+	'Youtube': r'\b([A-Za-z0-9_-]{11})\b',
 }
 
 service_urls = {
 	'NicoNicoDouga': 'https://www.nicovideo.jp/watch/{}',
-	'SoundCloud': 'https://soundcloud.com/{}',
+	'Bilibili': 'https://www.bilibili.com/video/{}',
 	'Youtube': 'https://www.youtube.com/watch?v={}',
-}
-
-def service_id_function_soundcloud(pv_id):
-	""""""
-
-	import yt_dlp
-
-	try:
-		ytdl = yt_dlp.YoutubeDL()
-		ytdl_info = ytdl.extract_info(
-			service_urls['SoundCloud'].format(pv_id),
-			download = False,
-		)
-	except:
-		return ""
-	else:
-		return ytdl_info.get('id') + ' ' + pv_id
-
-# convert $pv_id to VocaDB PV ID
-to_vocadb_pv_id = {
-	'SoundCloud': service_id_function_soundcloud
-}
-
-# convert VocaDB PV ID to $pv_id
-from_vocadb_pv_id = {
-	'SoundCloud': lambda x:re.search('([a-z0-9_-]+/[a-z0-9_-]+)', x).group(1), # leave the latter part (not the numeric id)
 }
 
 file_extensions = ('.mp3', '.m4a', '.ogg')
@@ -201,7 +175,7 @@ def write_tags(path):
 			if callable(cfg['metadata_tags'][field]):
 				metadata_value = cfg['metadata_tags'][field](metadata)
 			else:
-				metadata_value = re.sub('\$([a-z_]+)', metadata_returner, cfg['metadata_tags'][field]) # pattern, repl, string
+				metadata_value = re.sub(r'\$([a-z_]+)', metadata_returner, cfg['metadata_tags'][field]) # pattern, repl, string
 			metadata_values.append(metadata_value)
 
 		file.write(cfg['tags_output_file_tag_delimiter'].join(metadata_values) + '\n')
@@ -226,6 +200,7 @@ def generate_metadata(path):
 	# "is not None": 0 is falsy
 	service = request['pvs'][pv_index]['service'] if pv_index is not None else None
 	pv_id = request['pvs'][pv_index]['pvId'] if pv_index is not None else None
+	url = request['pvs'][pv_index]['url'] if pv_index is not None else None
 	uploader = request['pvs'][pv_index]['author'] if pv_index is not None else None
 
 	metadata = {
@@ -245,7 +220,6 @@ def generate_metadata(path):
 		'x_db': None,
 		'x_db_id': None,
 		'x_vocalist_types': {},
-		'x_urls': [],
 		'x_detection_method': detection_method,
 		'x_is_reprint': None,
 	}
@@ -266,23 +240,17 @@ def generate_metadata(path):
 
 		metadata['year'] = request['publishDate'][0:4] # it just werks
 
-	if service in from_vocadb_pv_id:
-		pv_id = from_vocadb_pv_id[service](pv_id)
-
-	if pv_id:
-		metadata['url'] = service_urls[service].format(pv_id)
+	if service:
+		metadata['url'] = url
 		metadata['uploader'] = uploader
 
-	for pv in request['pvs']:
-		if pv['pvType'] == 'Original':
-			metadata['x_urls'].append(pv['url'])
-		elif pv['pvId'] == pv_id:
-			print(
-				colorama.Fore.YELLOW + 'Have you downloaded a reprint? (' +
-				colorama.Fore.RESET + uploader +
-				colorama.Fore.YELLOW + ')'
-			)
-			metadata['x_is_reprint'] = uploader
+	if request['pvs'][pv_index]['pvType'] != 'Original':
+		print(
+			colorama.Fore.YELLOW + 'Have you downloaded a reprint? (' +
+			colorama.Fore.RESET + uploader +
+			colorama.Fore.YELLOW + ')'
+		)
+		metadata['x_is_reprint'] = uploader
 
 	for artist in request['artists']:
 		#print(artist)
@@ -352,10 +320,11 @@ def get_song_data(path):
 
 		if matches:
 			pv_id = matches.group(1)
+			url = service_urls[service].format(pv_id)
 			print(f'o {service} | {pv_id}')
-			server, request = query_api_song_by_pv(service, pv_id)
+			server, request = query_api_song_by_url(url)
 			if request:
-				pv_index = which_pv(request, service, pv_id)
+				pv_index = which_pv(request, url)
 				return server, request, pv_index, 'path-pv'
 		else:
 			print(f'x {service}')
@@ -365,18 +334,15 @@ def get_song_data(path):
 		print('Examining Internet Shortcut for PV ID:')
 		with open(path, mode = 'r', encoding = 'utf-8') as file:
 			file_content = file.read()
-			for service in service_regexes:
-				matches = re.search('http.+' + service_regexes[service] + '.*', file_content)
-
-				if matches:
-					pv_id = matches.group(1)
-					print(f'o {service} | {pv_id} | {matches.group(0)}')
-					server, request = query_api_song_by_pv(service, pv_id)
-					if request:
-						pv_index = which_pv(request, service, pv_id)
-						return server, request, pv_index, 'tags-pv'
-				else:
-					print(f'x {service}')
+			matches = re.search(r'URL=(http.+)', file_content)
+			if matches:
+				print(f'o {url}')
+				server, request = query_api_song_by_url(url)
+				if request:
+					pv_index = which_pv(request, url)
+					return server, request, pv_index, 'url-pv'
+			else:
+				print(f'x')
 		cfg['ffprobe'] = False
 
 	if cfg['ffprobe'] != False:
@@ -396,25 +362,24 @@ def get_song_data(path):
 		#ffprobe_output = json.loads(ffprobe_output)
 
 		print('Examining tags for PV ID:')
-		for service in service_regexes:
-			matches = re.search('(?:URL|url)=http.+' + service_regexes[service] + '.*', ffprobe_output)
+		matches = re.search(r'(?:URL|url)=(http.+)', ffprobe_output)
 
-			if matches:
-				pv_id = matches.group(1)
-				print(f'o {service} | {pv_id} | {matches.group(0)}')
-				server, request = query_api_song_by_pv(service, pv_id)
-				if request:
-					pv_index = which_pv(request, service, pv_id)
-					return server, request, pv_index, 'tags-pv'
-			else:
-				print(f'x {service}')
+		if matches:
+			url = matches.group(1)
+			print(f'o {url}')
+			server, request = query_api_song_by_url(url)
+			if request:
+				pv_index = which_pv(request, url)
+				return server, request, pv_index, 'tags-pv'
+		else:
+			print(f'x')
 
 		print('Examining tags for title and artist:')
-		matches = re.search('(?:title|TITLE)=([^/\n]+)', ffprobe_output)
+		matches = re.search(r'(?:title|TITLE)=([^/\n]+)', ffprobe_output)
 		if matches:
 			title = matches.group(1)
 			print("title | " + title)
-			matches = re.search('(?:artist|ARTIST)=([^/\n]+)', ffprobe_output)
+			matches = re.search(r'(?:artist|ARTIST)=([^/\n]+)', ffprobe_output)
 			if matches:
 				artist = matches.group(1)
 				print("artist | " + artist)
@@ -428,25 +393,32 @@ def get_song_data(path):
 	print(colorama.Fore.RED + 'Entry not found!')
 	return None, None, None, None
 
-def which_pv(request, service, pv_id):
+def which_pv(request, url):
 	"""
 	Look through the PVs listed in *DB data, and find the one that matches the given data.
 
 	Args:
 		request: *DB data (Dict).
-		service: A PV service.
-		pv_id: A PV ID.
+		url: A URL.
 
 	Returns:
 		The index of the PV in the DB* data.
 	"""
 
+	url = url.replace('https://www.youtube.com/watch?v=', 'https://youtu.be/')
+
 	for i, pv in enumerate(request['pvs']):
-		pv_id_new = pv['pvId']
-		if service in from_vocadb_pv_id:
-			pv_id_new = to_vocadb_pv_id[service](pv_id)
-		if (service == pv['service'] and pv_id == pv_id_new):
+
+		if pv['url'] == url:
 			return i
+
+		if pv['service'] == 'Bilibili' and '/BV' in url:
+			pv_id = re.search(service_regexes[pv['service']], url).group(0)
+			extended_metadata = json.loads(pv['extendedMetadata']['json'])
+			if extended_metadata['Bvid'] == pv_id:
+				return i
+
+	raise ValueError("Could not match PV to VocaDB data")
 
 def get_ffprobe_path():
 	"""
@@ -566,13 +538,12 @@ def query_api_song_by_search(title, artist):
 
 	return None, None
 
-def query_api_song_by_pv(service, pv_id):
+def query_api_song_by_url(url):
 	"""
-	Query the *DB API for a song, given a service and PV ID.
+	Query the *DB API for a song, given a URL.
 
 	Args:
-		service: A PV service.
-		pv_id: A PV ID.
+		url: A PV URL.
 
 	Returns:
 		Database name; *DB data (Dict).
@@ -580,32 +551,27 @@ def query_api_song_by_pv(service, pv_id):
 		Nothing, (None) if the API does not return results.
 	"""
 
-	pv_id_original = pv_id # for soundcloud
-
-	if service in to_vocadb_pv_id:
-		pv_id = to_vocadb_pv_id[service](pv_id)
-
 	for server in servers:
 		request = query_api(
 			server,
-			'songs/byPv',
+			'songs',
 			{
-				'pvService': service,
-				'pvId': pv_id,
+				'query': url,
 				'fields': 'Artists,PVs',
 				'lang': cfg['language'],
 			}
 		)
 
 		if request:
-			return server, request
+			if request['items']:
+				if len(request['items']) > 1:
+					raise ValueError("More than 1 result was found for this URL")
+				return server, request['items'][0]
 
 	print(colorama.Fore.RED + 'Could not find a matching entry for this PV!')
 	print('Add it?')
 	for server in servers:
-		print(server + '/Song/Create?pvUrl={}'.format(
-			service_urls[service].format(pv_id_original)
-		))
+		print(server + '/Song/Create?pvUrl={}'.format(url))
 
 	return None, None
 

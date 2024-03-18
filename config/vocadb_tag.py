@@ -33,9 +33,12 @@ metadata_tags = {
 		.replace('Producer', 'ヒト')
 		.replace('Utaite', 'ヒト')
 		.replace('OtherVocalist', 'ヒト')
+		.replace('CoverArtist', 'ヒト')
 		.replace('Vocaloid', 'VOCALOID')
 	,
-	'url': '$url',
+	'url': lambda x: x['url']
+		.replace('https://youtu.be/', 'https://www.youtube.com/watch?v=')
+	,
 	'comment': '$song_type song | $x_db/S/$x_db_id',
 }
 metadata_multi_value_delimiter = ';' # as in "初音ミク; GUMI"
