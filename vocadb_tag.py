@@ -294,7 +294,8 @@ def generate_metadata(path):
 			('Vocalist' in artist['roles']) or
 			('Vocalist' in artist['categories'] and 'Default' in artist['roles'])
 		):
-			if 'artistType' in artist['artist']:
+			# `'artist' in artist`: custom artist vocalists: KeyError: 'artist'
+			if 'artist' in artist and 'artistType' in artist['artist']:
 				artist_type = artist['artist']['artistType']
 				metadata['x_vocalist_types'][artist_type] = True
 
