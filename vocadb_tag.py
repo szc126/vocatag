@@ -613,7 +613,7 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description = 'For PATH(s), retrieve song metadata from VocaDB or UtaiteDB.')
 	parser.add_argument(
 		'paths',
-		metavar = '[PATH]...',
+		metavar = 'PATH',
 		help = 'Files or folders. Folders will be scanned for certain file ' +
 			'types: ' + ' '.join(file_extensions),
 		nargs = '+',
