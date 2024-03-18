@@ -305,8 +305,10 @@ def generate_metadata(path):
 				metadata['vocalists'].append(artist['name'])
 
 		if (
+			('Circle' in artist['categories']) or
 			('Composer' in artist['roles']) or
-			('Producer' in artist['categories'] and 'Default' in artist['roles'])
+			('Producer' in artist['categories'] and 'Default' in artist['roles']) or
+			('VoiceManipulator' in artist['roles']) # XXX
 		):
 			metadata['composers'].append(artist['name'])
 
