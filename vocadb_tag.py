@@ -213,7 +213,7 @@ def generate_metadata(path):
 		'band': [],
 		'vocalists': [],
 		'vocalists_support': [],
-		'url': [],
+		'url': None,
 		'uploader': None,
 
 		# meta-metadata
