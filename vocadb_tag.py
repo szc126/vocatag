@@ -335,6 +335,7 @@ def get_song_data(path):
 			file_content = file.read()
 			matches = re.search(r'URL=(http.+)', file_content)
 			if matches:
+				url = matches.group(1)
 				print(f'o {url}')
 				server, request = query_api_song_by_url(url)
 				if request:
