@@ -38,6 +38,7 @@ metadata_tags = {
 	,
 	'url': lambda x: x['url']
 		.replace('https://youtu.be/', 'https://www.youtube.com/watch?v=')
+		if x['url'] else ''
 	,
 	'comment': '$song_type song | $x_db/S/$x_db_id',
 }
