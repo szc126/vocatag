@@ -276,16 +276,14 @@ def generate_metadata(path):
 		if (
 			('Circle' in artist['categories']) or
 			('Composer' in artist['roles']) or
-			('Producer' in artist['categories'] and 'Default' in artist['roles']) or
-			('VoiceManipulator' in artist['roles']) # XXX
+			('Producer' in artist['categories'] and 'Default' in artist['roles'])
 		):
 			metadata['composers'].append(artist['name'])
 
 		if (
 			('Arranger' in artist['roles']) or
-			('Arranger' in artist['categories'] and 'Default' in artist['roles'])
-		) and (
-			request['songType'] == 'Remix'
+			('Arranger' in artist['categories'] and 'Default' in artist['roles']) or
+			('VoiceManipulator' in artist['roles']) # XXX
 		):
 			metadata['arrangers'].append(artist['name'])
 
