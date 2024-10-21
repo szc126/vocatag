@@ -404,12 +404,12 @@ def which_pv(request, url):
 	Returns:
 		The index of the PV in the DB* data.
 	"""
-
 	url = url.replace('https://www.youtube.com/watch?v=', 'https://youtu.be/')
+	url = url.rstrip('/') # bilibili av
 
 	for i, pv in enumerate(request['pvs']):
-
-		if pv['url'] == url:
+		# https://github.com/VocaDB/vocadb/issues/1020 is NOT fixed
+		if pv['url'].replace('http://', 'https://') == url:
 			return i
 
 		if pv['service'] == 'Bilibili' and '/BV' in url:
