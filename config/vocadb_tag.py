@@ -15,12 +15,12 @@ metadata_tags = {
 		x['vocalists']
 	),
 	'composer': lambda x: ';'.join(
+		x['composers'] +
+		x['arrangers'] +
 		[s for s in [
 			('カバー' if x['song_type'] in ['Cover', 'Remix'] and not 'Utaite' in x['x_vocalist_types'] else None),
 			('歌ってみた' if x['song_type'] in ['Cover', 'Remix'] and 'Utaite' in x['x_vocalist_types'] else None),
-		] if s] +
-		x['composers'] +
-		x['arrangers']
+		] if s]
 	),
 	'date': '$year',
 	'genre': lambda x: ';'.join(
