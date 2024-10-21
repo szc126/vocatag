@@ -197,7 +197,7 @@ def generate_metadata(path):
 	if not request:
 		return None
 
-	# "is not None": 0 is falsy
+	# `is not None`: 0 is falsy
 	service = request['pvs'][pv_index]['service'] if pv_index is not None else None
 	pv_id = request['pvs'][pv_index]['pvId'] if pv_index is not None else None
 	url = request['pvs'][pv_index]['url'] if pv_index is not None else None
@@ -244,7 +244,8 @@ def generate_metadata(path):
 		metadata['url'] = url
 		metadata['uploader'] = uploader
 
-	if request['pvs'][pv_index]['pvType'] != 'Original':
+	# `> -1`: 0 is falsy
+	if (pv_index is not None) and (pv_index > -1) and request['pvs'][pv_index]['pvType'] != 'Original':
 		print(
 			colorama.Fore.YELLOW + 'Have you downloaded a reprint? (' +
 			colorama.Fore.RESET + uploader +
