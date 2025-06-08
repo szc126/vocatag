@@ -16,7 +16,7 @@ metadata_tags = {
 	),
 	'composer': lambda x: ';'.join(
 		x['composers'] +
-		x['arrangers'] +
+		[s for s in x['arrangers'] if not s in x['composers']] +
 		[s for s in [
 			('カバー' if x['song_type'] in ['Cover', 'Remix'] and not 'Utaite' in x['x_vocalist_types'] else None),
 			('歌ってみた' if x['song_type'] in ['Cover', 'Remix'] and 'Utaite' in x['x_vocalist_types'] else None),
