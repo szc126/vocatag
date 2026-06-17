@@ -205,6 +205,10 @@ def generate_metadata(path):
 
 	metadata = {
 		'title': None,
+		'titles': [],
+		'title_mul': None,
+		'title_latn': None,
+		'title_en': None,
 		'song_type': None,
 		'date': None,
 		'year': None,
@@ -215,6 +219,10 @@ def generate_metadata(path):
 		'vocalists_support': [],
 		'url': None,
 		'uploader': None,
+		'album': None,
+		'albums': [],
+		'release_event': None,
+		'release_events': [],
 
 		# meta-metadata
 		'x_db': None,
@@ -232,8 +240,26 @@ def generate_metadata(path):
 	metadata['x_path'] = path
 
 	metadata['title'] = request['name']
+	metadata['titles'] = request['names']
+	for name in request['names']:
+		if name['language'] == 'Japanese' and not metadata['title_mul']:
+			metadata['title_mul'] = name['value']
+		if name['language'] == 'Romaji' and not metadata['title_latn']:
+			metadata['title_latn'] = name['value']
+		if name['language'] == 'English' and not metadata['title_en']:
+			metadata['title_en'] = name['value']
 
 	metadata['song_type'] = request['songType']
+
+	if request['albums']:
+		metadata['albums'] = request['albums']
+		metadata['album'] = request['albums'][0]['name']
+	# TODO: return album that is most similar to original metadata, and return that album's date
+	# https://stackoverflow.com/questions/17388213/find-the-similarity-metric-between-two-strings
+
+	if request['releaseEvents']:
+		metadata['release_events'] = request['releaseEvents']
+		metadata['release_event'] = request['releaseEvents'][0]['name']
 
 	if 'publishDate' in request:
 		metadata['date'] = request['publishDate']
@@ -243,6 +269,8 @@ def generate_metadata(path):
 	if service:
 		metadata['url'] = url
 		metadata['uploader'] = uploader
+
+	# TODO: return original URL in other cases (downloaded from producer's website, etc.)
 
 	# `> -1`: 0 is falsy
 	if (pv_index is not None) and (pv_index > -1) and request['pvs'][pv_index]['pvType'] != 'Original':
@@ -516,7 +544,7 @@ def query_api_song_by_search(title, artist):
 				'songs',
 				{
 					'query': title,
-					'fields': 'Artists,PVs',
+					'fields': 'Names,Artists,PVs,Albums,ReleaseEvent',
 					'artistId[]': artist_id,
 					'sort': 'RatingScore',
 					'childVoicebanks': True,
@@ -528,7 +556,7 @@ def query_api_song_by_search(title, artist):
 				'songs',
 				{
 					'query': title,
-					'fields': 'Artists,PVs',
+					'fields': 'Names,Artists,PVs,Albums,ReleaseEvent',
 					'sort': 'RatingScore',
 				}
 			)
@@ -557,7 +585,7 @@ def query_api_song_by_url(url):
 			'songs',
 			{
 				'query': url,
-				'fields': 'Artists,PVs',
+				'fields': 'Names,Artists,PVs,Albums,ReleaseEvent',
 				'lang': cfg['language'],
 			}
 		)
