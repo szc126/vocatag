@@ -9,7 +9,7 @@ formatstring_output_file = '/tmp/vocadb_tag.formatstring.log'
 
 metadata_tags = {
 	'__filename_ext': '$x_filename_ext', # mp3tag
-	'title': lambda x: x['title'] + (' (' + x['year'] + ')' if x['song_type'] == 'Remaster' else '') + (' (feat. ' + ', '.join(x['vocalists_support']) + ')' if x['vocalists_support'] else ''),
+	'title': lambda x: x['title'] + (' (' + x['year'] + ')' if x['song_type'] == 'Remaster' else '') + (' (feat. ' + ', '.join(x['vocalists_support']) + ')' if x['vocalists_support'] else '') + (' ' + x['title_en'] if x['title_en'] and x['title_en'] != x['title'] else ''),
 	'artist': lambda x: ';'.join(
 		x['band'] +
 		x['vocalists']
@@ -22,6 +22,7 @@ metadata_tags = {
 			('歌ってみた' if x['song_type'] in ['Cover', 'Remix'] and 'Utaite' in x['x_vocalist_types'] else None),
 		] if s]
 	),
+	'album': lambda x: x['album'] or (x['release_event'] or '').replace('唄音ウタ誕生日', 'デフォ子誕生祭') or '',
 	'date': '$year',
 	'genre': lambda x: ';'.join(
 		[s for s in [
@@ -36,9 +37,7 @@ metadata_tags = {
 		.replace('CoverArtist', 'ヒト')
 		.replace('Vocaloid', 'VOCALOID')
 	,
-	'url': lambda x: x['url']
-		.replace('https://youtu.be/', 'https://www.youtube.com/watch?v=')
-		if x['url'] else ''
+	'url': lambda x: (x['url'] or '').replace('https://youtu.be/', 'https://www.youtube.com/watch?v=')
 	,
 	'comment': '$song_type song | $x_db/S/$x_db_id',
 }
